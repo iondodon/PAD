@@ -1,0 +1,8 @@
+host: 'postgres'
+adapter: 'postgresql'
+
+username: 'default'
+password: 'secret'
+
+encoding: utf-8
+database: 'pad-service'
