@@ -1,5 +1,5 @@
 defmodule Utils.NoOpJsonDecoder do
-    def decode!(input) do
-        input
+    def decode!(data) do
+        data
     end
 end

@@ -27,11 +27,11 @@ defmodule Gateway.Router do
         end
     end
 
-    defp handle_menus_request(conn) do
-        body = conn.body_params["_json"]
+    defp handle_menus_requests(conn) do
+        body = conn.body_params["_json"] || ""
         method = String.to_atom(String.downcase(conn.method, :default))
         
-        case Service.request(method, "/menus", body, conn.req_headers) do
+        case Service.request(method, conn.request_path, body, conn.req_headers) do
             {:ok, response} -> 
                 send_resp(conn, response.status_code, response.body)
             {:error, _reason} -> 
@@ -40,7 +40,7 @@ defmodule Gateway.Router do
     end
 
     match "/menus*_rest" do
-        handle_menus_request(conn)
+        handle_menus_requests(conn)
     end
 
     match _ do
