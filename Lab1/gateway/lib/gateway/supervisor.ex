@@ -1,7 +1,6 @@
 defmodule Gateway.Supervisor do
   use Supervisor
 
-  @spec start_link :: :ignore | {:error, any} | {:ok, pid}
   def start_link do
     Supervisor.start_link(__MODULE__, [])
   end
