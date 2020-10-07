@@ -6,37 +6,29 @@ defmodule Gateway.Router do
     plug(:match)
 
     plug(
-        Plug.Parsers, 
-        parsers: [:json], 
-        pass: ["application/json"], 
-        json_decoder: Utils.NoOpJsonDecoder
+        Plug.Parsers,
+        parsers: [:json, :urlencoded, :multipart],
+        pass: ["text/*"],
+        json_decoder: Jason
     )
 
     plug(:dispatch)
 
-    get "/hello" do
-        case Service.get(conn.request_path) do
-            {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-            send_resp(conn, 200, body)
+    defp handle_menus_requests(conn) do
+        method = String.to_atom(String.downcase(conn.method, :default))
+        binary_body = Jason.encode!(conn.body_params)
 
-            {:ok, %HTTPoison.Response{status_code: 404}} ->
-            send_resp(conn, 404, "404. not found")
-
-            {:error, %HTTPoison.Error{reason: reason}} ->
-            send_resp(conn, 500, reason)
+        case Service.request(method, conn.request_path, binary_body, conn.req_headers) do
+            {:ok, response} ->
+                send_resp(conn, response.status_code, response.body)
+            {:error, _reason} ->
+                send_resp(conn, 503, "Service error!")
         end
     end
 
-    defp handle_menus_requests(conn) do
-        body = conn.body_params["_json"] || ""
-        method = String.to_atom(String.downcase(conn.method, :default))
-        
-        case Service.request(method, conn.request_path, body, conn.req_headers) do
-            {:ok, response} -> 
-                send_resp(conn, response.status_code, response.body)
-            {:error, _reason} -> 
-                send_resp(conn, 503, "Service error")
-        end
+    post "/register" do
+        address = conn.body_params["address"]
+        send_resp(conn, 200, address)
     end
 
     match "/menus*_rest" do
@@ -44,10 +36,10 @@ defmodule Gateway.Router do
     end
 
     match _ do
-        send_resp(conn, 404, "404. not found")
+        send_resp(conn, 404, "404. not found!")
     end
 
     defp handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
-        send_resp(conn, 502, "Something went wronggg")
+        send_resp(conn, 502, "Something went wrong!")
     end
 end

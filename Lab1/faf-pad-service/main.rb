@@ -18,11 +18,11 @@ GATEWAY_ADDRESS = 'elixir:4000/register'.freeze
 IP   = ENV['IP'] || '0.0.0.0'
 PORT = ENV['PORT'] || '3000'
 
-# RestClient::Request.execute(
-#   method: :post,
-#   url: GATEWAY_ADDRESS,
-#   payload: { address: "#{IP}:#{PORT}" }.to_json
-# )
+RestClient::Request.execute(
+  method: :post,
+  url: GATEWAY_ADDRESS,
+  payload: { address: "#{IP}:#{PORT}" }
+)
 
 set :bind, IP
 set :port, PORT
