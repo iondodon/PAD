@@ -8,7 +8,7 @@ defmodule Gateway.Supervisor do
   def init(_) do
     children = [
       {Plug.Cowboy, scheme: :http, plug: Gateway.Router, options: [port: 4000]},
-      {Redix, {"redis://redix.example.com", [name: :redix, port: 6397]}}
+      Gateway.Cache.RCache
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

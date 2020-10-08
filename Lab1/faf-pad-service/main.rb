@@ -15,7 +15,7 @@ db_config = YAML.safe_load(File.open('config/database.yml'))
 ActiveRecord::Base.establish_connection(db_config)
 
 GATEWAY_ADDRESS = 'elixir:4000/register'.freeze
-IP   = ENV['IP'] || '0.0.0.0'
+IP   = ENV['IP'] || 'ruby'
 PORT = ENV['PORT'] || '3000'
 
 RestClient::Request.execute(
