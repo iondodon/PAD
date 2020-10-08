@@ -565,9 +565,10 @@ services:
       build:
         context: ./elixir
       volumes:
-        - ${APP_CODE_PATH_HOST}/gateway:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+        - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
       ports:
         - "4000:4000"
+        - "6666:6666"
       tty: true
       networks:
         - backend

@@ -4,7 +4,7 @@ defmodule Gateway.Supervisor do
   @gateway_port Application.get_env(:gateway, :gateway_port, 4000)
 
   def start_link do
-    Supervisor.start_link(__MODULE__, [], name: Cache)
+    Supervisor.start_link(__MODULE__, [], name: GatewaySupervisor)
   end
 
   def init(_) do

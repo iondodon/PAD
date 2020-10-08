@@ -34,11 +34,7 @@ defmodule Gateway.Router do
         send_resp(conn, 200, address <> " registed")
     end
 
-    match "/menus*_rest" do handle_menus_requests(conn) end
-
-    match _ do send_resp(conn, 404, "404. not found!") end
-
-    defp handle_errors(conn, err) do
-        send_resp(conn, 500, err.reason.message)
-    end
+    match "/menus*_rest", do: handle_menus_requests(conn)
+    match _, do: send_resp(conn, 404, "404. not found!")
+    defp handle_errors(conn, err), do: send_resp(conn, 500, err.reason.message)
 end
