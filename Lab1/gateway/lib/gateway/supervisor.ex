@@ -1,13 +1,15 @@
 defmodule Gateway.Supervisor do
   use Supervisor
 
+  @gateway_port Application.get_env(:gateway, :gateway_port, 4000)
+
   def start_link do
     Supervisor.start_link(__MODULE__, [], name: Cache)
   end
 
   def init(_) do
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Gateway.Router, options: [port: 4000]},
+      {Plug.Cowboy, scheme: :http, plug: Gateway.Router, options: [port: @gateway_port]},
       Gateway.Cache.RCache
     ]
 

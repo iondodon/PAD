@@ -15,7 +15,13 @@ defmodule Gateway.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Gateway, []}
+      mod: {Gateway, []},
+      env: [
+        redis_host: "localhost",
+        redis_port: 6379,
+        gateway_port: 4000,
+        failures_limit: 3
+      ]
     ]
   end
 

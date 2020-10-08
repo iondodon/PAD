@@ -3,7 +3,7 @@ defmodule Service.CircuiBreaker do
     alias Gateway.Cache.RCache
 
     @scheme "http://"
-    @feilures_limit 2
+    @feilures_limit Application.get_env(:gateway, :failures_limit, 3)
 
     def request(%{method: method, path: path, body: body, headers: headers}) do
         unless LoadBalancer.any_available? do
@@ -24,7 +24,7 @@ defmodule Service.CircuiBreaker do
     defp update_service_state(service_address)  do
         failures = RCache.command(["INCR", cache_key(service_address)])
 
-        if failures > @feilures_limit do
+        if failures >= @feilures_limit do
             RCache.command(["DEL", cache_key(service_address)])
             RCache.command(["LREM", "services", 0, service_address])
         end
