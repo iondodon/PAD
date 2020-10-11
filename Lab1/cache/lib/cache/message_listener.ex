@@ -6,11 +6,11 @@ defmodule Cache.MessageListener do
     @data_length 0
     
     def serve(client) do
-        response = with {:ok, data} <- read_from_client(client),
+        result = with {:ok, data} <- read_from_client(client),
                    {:ok, command} <- Cache.Command.parse(data),
                    do: Cache.Command.run(command)
         
-        send_to_client(client, response)
+        send_to_client(client, result)
         
         serve(client)
     end
@@ -37,6 +37,6 @@ defmodule Cache.MessageListener do
     end
 
     defp send_to_client(client, result) do
-        :gen_tcp.send(client, Jason.encode!(result))
+        :gen_tcp.send(client, "#{result} \r\n\n")
     end
 end
