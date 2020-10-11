@@ -2,24 +2,21 @@ defmodule Cache.MessageListener do
     require Logger
 
     # client means client socket
+
     @data_length 0
     
     def serve(client) do
-        msg = with {:ok, data} <- read_from_client(client),
+        response = with {:ok, data} <- read_from_client(client),
                    {:ok, command} <- Cache.Command.parse(data),
                    do: Cache.Command.run(command)
         
-        send_to_client(client, msg)
+        send_to_client(client, response)
+        
         serve(client)
     end
     
     defp read_from_client(client) do
-        {:ok, data} = :gen_tcp.recv(client, @data_length)
-        data
-    end
-
-    defp send_to_client(client, {:ok, text}) do
-        :gen_tcp.send(client, text)
+        :gen_tcp.recv(client, @data_length)
     end
     
     defp send_to_client(client, {:error, :unknown_command}) do
@@ -34,7 +31,12 @@ defmodule Cache.MessageListener do
     
     defp send_to_client(client, {:error, error}) do
         # Unknown error; write to the client and exit
+        Logger.error(error)
         :gen_tcp.send(client, "ERROR\r\n")
         exit(error)
+    end
+
+    defp send_to_client(client, result) do
+        :gen_tcp.send(client, Jason.encode!(result))
     end
 end

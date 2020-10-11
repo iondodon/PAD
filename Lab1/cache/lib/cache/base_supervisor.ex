@@ -9,6 +9,7 @@ defmodule Cache.BaseSupervisor do
 
     def init(_) do
         children = [
+            {Cache.Storage, %{}},
             {Task.Supervisor, name: Cache.ConnectionSupervisor},
             Supervisor.child_spec(
                 {Task, fn -> Cache.ConnectionListener.accept(@cache_port) end}, restart: :permanent

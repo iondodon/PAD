@@ -12,7 +12,6 @@ defmodule Cache.ConnectionListener do
         {:ok, pid} = Task.Supervisor.start_child(
             Cache.ConnectionSupervisor, 
             fn -> Cache.MessageListener.serve(client) end
-        
         )
 
         :ok = :gen_tcp.controlling_process(client, pid)

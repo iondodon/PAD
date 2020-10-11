@@ -1,21 +1,26 @@
 defmodule Cache.Command do
+    require Logger
+    alias Cache.Storage
 
     def parse(line) do
         case String.split(line) do
-            ["CREATE", bucket] -> {:ok, {:create, bucket}}
-            ["GET", bucket, key] -> {:ok, {:get, bucket, key}}
-            ["PUT", bucket, key, value] -> {:ok, {:put, bucket, key, value}}
-            ["DELETE", bucket, key] -> {:ok, {:delete, bucket, key}}
+            ["SET", key, value] -> {:ok, {:set, key, value}}
+            ["GET", key] -> {:ok, {:get, key}}
             _ -> {:error, :unknown_command}
           end
     end
 
-    @doc """
-    Runs the given command.
-    """
+    # Command execution
+
     def run(command)
 
-    def run({:create, bucket}) do
-        {:ok, "#{bucket}\r\n"}
+    def run({:set, key, value}) do
+        Logger.info("SET #{key} to #{value}")
+        Storage.set(key, value)
+    end
+
+    def run({:get, key}) do
+        Logger.info("GET #{key}")
+        Storage.get(key)
     end
 end
