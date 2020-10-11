@@ -1,6 +1,7 @@
 defmodule Cache.Command do
     require Logger
     alias Cache.Storage
+    alias Cache.Storage.Extra
 
     def parse(line) do
         case String.split(line) do
@@ -11,6 +12,7 @@ defmodule Cache.Command do
             ["DEL", key] -> {:ok, {:del, key}}
             ["DEL" | keys] -> {:ok, {:del, keys}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
+            ["TTL", key] -> {:ok, {:ttl, key}}
             _ -> {:error, :unknown_command}
           end
     end
@@ -56,8 +58,19 @@ defmodule Cache.Command do
         Storage.delete_key(key)
     end
 
+    def run({:ttl, key}) do
+        ttl = Extra.get_ttl("ttl#" <> key)
+        if ttl != :nil do
+            ttl - System.os_time(:second)
+        else
+            ttl
+        end
+    end
+
     def run({:expire, key, sec}) do
-        Logger.info("EXPIRE #{key} in {sec} seconds")
-        
+        Logger.info("EXPIRE #{key} in #{sec} seconds")
+        {sec, _} = Integer.parse(sec)
+        ttl = System.os_time(:second) + sec
+        Extra.set_key_ttl("ttl#" <> key, ttl)
     end
 end

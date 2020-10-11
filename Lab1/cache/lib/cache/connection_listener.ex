@@ -1,5 +1,16 @@
 defmodule Cache.ConnectionListener do
+    use Task, restart: :permanent
     require Logger
+
+    @cache_port Application.get_env(:cache_port, :port, 6666) 
+
+    def start_link(_args) do
+      Task.start_link(__MODULE__, :run, [])
+    end
+  
+    def run() do
+      accept(@cache_port)
+    end
     
     def accept(port) do
         {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
