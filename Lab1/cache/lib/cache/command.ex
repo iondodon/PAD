@@ -12,6 +12,7 @@ defmodule Cache.Command do
             ["DEL", key] -> {:ok, {:del, key}}
             ["DEL" | keys] -> {:ok, {:del, keys}}
             ["INCR", key] -> {:ok, {:incr, key}}
+            ["LPUSH", key | values] -> {:ok, {:lpush, key, values}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
             _ -> {:error, :unknown_command}
@@ -62,6 +63,11 @@ defmodule Cache.Command do
     def run({:incr, key}) do
         Logger.info("INCR #{key}")
         Storage.increment(key)
+    end
+
+    def run({:lpush, key, values}) do
+        Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
+        Storage.lpush(key, values)
     end
 
     def run({:ttl, key}) do

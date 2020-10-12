@@ -1,6 +1,6 @@
 defmodule Cache.Storage do
     @doc """
-    Every value is stored as a string
+    Atomic values are stored as a string
     """
 
     use Agent
@@ -59,6 +59,24 @@ defmodule Cache.Storage do
             end
         else
             value
+        end
+    end
+
+    def lpush(key, values) do
+        storage = get_storage()
+
+        list = Map.get(storage, key, [])
+        if !is_list(list) do
+            :not_a_list
+        else
+            list = Enum.reduce(values, list, fn value, list -> 
+                [value | list]
+            end)
+            
+            new_map = Map.put(storage, key, list)
+            update_storage(new_map)
+            
+            Kernel.inspect(length(list))
         end
     end
 

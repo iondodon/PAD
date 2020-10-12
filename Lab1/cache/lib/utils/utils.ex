@@ -1,33 +1,45 @@
 defmodule Utils do
     def type_and_value(value) do
+        value = internal_type(value)
+
         cond do
-            is_float(value)    -> "(float) #{value}"
-            is_integer(value)  -> "(integer) #{value}"
-            is_boolean(value)  -> "(boolean) #{value}"
-            is_atom(value)     -> "(atom) #{value}"
-            is_binary(value)   -> "(binary) #{value}"
-            is_function(value) -> "(function) #{value}"
-            is_list(value)     -> "(list) #{value}"
-            is_tuple(value)    -> "(tuple) #{value}"
-            true              -> "(idunno) #{value}"
+            is_float(value)    -> 
+                "(float) #{value}"
+            is_integer(value)  -> 
+                "(integer) #{value}"
+            is_boolean(value)  -> 
+                "(boolean) #{value}"
+            is_atom(value)     -> 
+                "(atom) #{value}"
+            is_binary(value)   -> 
+                "(binary) #{value}"
+            is_function(value) -> 
+                "(function) #{value}"
+            is_list(value)     -> 
+                value_str = Enum.reduce(value, "", fn item, str -> str <> " " <> item end)
+                "(list) #{value_str}"
+            is_tuple(value)    -> 
+                "(tuple) #{value}"
+            true              -> 
+                "(idunno) #{value}"
         end    
     end
 
-    def internal_type(str_value) do
-        if is_binary(str_value) do
-            case Integer.parse(str_value) do
+    def internal_type(value) do
+        if is_binary(value) do
+            case Integer.parse(value) do
                 {val, rem} -> if String.equivalent?(rem,"") do val else
-                    {val, _rem} = Float.parse(str_value)
+                    {val, _rem} = Float.parse(value)
                     val
                 end
                 :error -> cond do
-                    String.equivalent?(str_value, "true") -> true
-                    String.equivalent?(str_value, "false") -> false
-                    true -> str_value
+                    String.equivalent?(value, "true") -> true
+                    String.equivalent?(value, "false") -> false
+                    true -> value
                 end
             end
         else
-            str_value
+            value
         end
     end
 end

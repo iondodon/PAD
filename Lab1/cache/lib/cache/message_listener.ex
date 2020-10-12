@@ -21,7 +21,7 @@ defmodule Cache.MessageListener do
     
     defp send_to_client(client, {:error, :unknown_command}) do
         # Known error; write to the client
-        :gen_tcp.send(client, "UNKNOWN COMMAND\r\n")
+        :gen_tcp.send(client, "UNKNOWN COMMAND\r\n\n")
     end
     
     defp send_to_client(_client, {:error, :closed}) do
@@ -37,8 +37,7 @@ defmodule Cache.MessageListener do
     end
 
     defp send_to_client(client, result) do
-        internal_value = Utils.internal_type(result)
-        response = Utils.type_and_value(internal_value)
+        response = Utils.type_and_value(result)
         :gen_tcp.send(client, "#{response} \r\n\n")
     end
 end
