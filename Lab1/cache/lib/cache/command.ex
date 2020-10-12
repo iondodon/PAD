@@ -11,6 +11,7 @@ defmodule Cache.Command do
             ["MGET" | keys] -> {:ok, {:mget, keys}}
             ["DEL", key] -> {:ok, {:del, key}}
             ["DEL" | keys] -> {:ok, {:del, keys}}
+            ["INCR", key] -> {:ok, {:incr, key}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
             _ -> {:error, :unknown_command}
@@ -56,6 +57,11 @@ defmodule Cache.Command do
     def run({:del, key}) do
         Logger.info("DELETE #{key}")
         Storage.delete_key(key)
+    end
+
+    def run({:incr, key}) do
+        Logger.info("INCR #{key}")
+        Storage.increment(key)
     end
 
     def run({:ttl, key}) do

@@ -21,10 +21,9 @@ defmodule Cache.ConnectionListener do
     defp loop_acceptor(socket) do
         {:ok, client} = :gen_tcp.accept(socket)
         {:ok, pid} = Task.Supervisor.start_child(
-            Cache.ConnectionSupervisor, 
-            fn -> Cache.MessageListener.serve(client) end
+          Cache.MessageListener.Supervisor, 
+          fn -> Cache.MessageListener.serve(client) end
         )
-
         :ok = :gen_tcp.controlling_process(client, pid)
 
         loop_acceptor(socket)

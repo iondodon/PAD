@@ -1,4 +1,8 @@
 defmodule Cache.Storage do
+    @doc """
+    Every value is stored as a string
+    """
+
     use Agent
     require Logger
 
@@ -22,7 +26,7 @@ defmodule Cache.Storage do
         storage = get_storage()
         Enum.reduce(keys, [], fn key, list -> 
             value = Map.get(storage, key)
-            [value | list]
+            list ++ [value]
         end)
     end
 
@@ -38,9 +42,24 @@ defmodule Cache.Storage do
             if Map.has_key?(get_storage(), key) do
                 {_deleted_value, new_map} = Map.pop(get_storage(), key)
                 update_storage(new_map)
-                deleted + 1
+                Kernel.inspect(deleted + 1)
             end
         end)
+    end
+
+    def increment(key) do
+        value = Agent.get(__MODULE__, fn storage -> storage[key] end)
+        if value != :nil do
+            case Integer.parse(value) do
+                {value, _} -> 
+                    value = value + 1
+                    set(key, value)
+                    Kernel.inspect(value)
+                :error -> :error
+            end
+        else
+            value
+        end
     end
 
     defp update_storage(new_storage) do
