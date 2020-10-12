@@ -10,7 +10,8 @@ defmodule Gateway.Supervisor do
   def init(_) do
     children = [
       {Plug.Cowboy, scheme: :http, plug: Gateway.Router, options: [port: @gateway_port]},
-      Gateway.Cache.RCache
+      Gateway.Cache.RCache,
+      Gateway.Cache.ECache
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

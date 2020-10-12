@@ -2,7 +2,6 @@ defmodule Cache.Storage do
     @doc """
     Atomic values are stored as a string
     """
-
     use Agent
     require Logger
 
