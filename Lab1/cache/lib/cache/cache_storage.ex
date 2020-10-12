@@ -80,6 +80,32 @@ defmodule Cache.Storage do
         end
     end
 
+    def rpoplpush(key1, key2) do
+        storage = get_storage()
+        list1 = Map.get(storage, key1)
+        list2 = Map.get(storage, key2)
+
+        if !is_list(list1) or !is_list(list2) do
+            :not_a_list
+        else
+            if length(list1) == 0 do
+                :empy_list
+            else
+                # rpop
+                {last, list1_rest} = List.pop_at(list1, length(list1) - 1)
+                #lpush
+                list2 = [last] ++ list2
+    
+                storage = Map.put(storage, key1, list1_rest)
+                storage = Map.put(storage, key2, list2)
+    
+                update_storage(storage)
+    
+                last
+            end
+        end
+    end
+
     defp update_storage(new_storage) do
         Agent.update(__MODULE__, fn _storage -> new_storage end)
     end
