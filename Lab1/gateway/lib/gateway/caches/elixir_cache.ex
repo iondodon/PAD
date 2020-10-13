@@ -23,23 +23,20 @@ defmodule Gateway.Cache.ECache do
             {:ok, socket} -> 
                 Logger.info("Connected to elixir cache")
                 {:ok, socket}
-            {:error, reason} -> 
+            {:error, _reason} -> 
                 Logger.info("Not able to connect to elixir cache")
-                Logger.error(reason)
                 :ignore
         end
     end
 
     def handle_call({:command, command}, _from, socket) do
-        response = with :gen_tcp.send(socket, command), 
+        response = with :gen_tcp.send(socket, command <> "\n"), 
                     do: :gen_tcp.recv(socket, @recv_data_length)
         
         case response do
             {:error, reason} ->
-                IO.inspect(reason) 
-                {:reply, "error", socket}
-            {:ok, data} -> 
-                IO.inspect(data)
+                {:stop, Kernel.inspect(reason), Kernel.inspect(reason), socket}
+            {:ok, data} ->
                 {:reply, data, socket}
         end
     end
