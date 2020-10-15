@@ -2,8 +2,7 @@ defmodule Gateway.Router do
     use Plug.Router
     use Plug.ErrorHandler
     alias Service.CircuiBreaker
-    alias Gateway.RCache
-    alias Gateway.Cache.RCache
+    alias Gateway.Cache.ECache
 
     plug(:match)
     plug(
@@ -30,7 +29,7 @@ defmodule Gateway.Router do
 
     post "/register" do
         address = conn.body_params["address"]
-        RCache.command(["LPUSH", "services", address])
+        ECache.command("LPUSH services #{address}")
         send_resp(conn, 200, address <> " registed")
     end
 

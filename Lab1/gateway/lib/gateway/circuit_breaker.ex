@@ -1,6 +1,6 @@
 defmodule Service.CircuiBreaker do
     alias Gateway.HttpClient
-    alias Gateway.Cache.RCache
+    alias Gateway.Cache.ECache
 
     @scheme "http://"
     @feilures_limit Application.get_env(:gateway, :failures_limit, 3)
@@ -22,11 +22,11 @@ defmodule Service.CircuiBreaker do
     end
 
     defp update_service_state(service_address)  do
-        failures = RCache.command(["INCR", cache_key(service_address)])
+        failures = ECache.command("INCR #{cache_key(service_address)}")
 
         if failures >= @feilures_limit do
-            RCache.command(["DEL", cache_key(service_address)])
-            RCache.command(["LREM", "services", 0, service_address])
+            ECache.command("DEL #{cache_key(service_address)}")
+            ECache.command("LREM services #{service_address}")
         end
     end
 

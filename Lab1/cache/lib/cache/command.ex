@@ -13,6 +13,8 @@ defmodule Cache.Command do
             ["DEL" | keys] -> {:ok, {:del, keys}}
             ["INCR", key] -> {:ok, {:incr, key}}
             ["LPUSH", key | values] -> {:ok, {:lpush, key, values}}
+            ["LLEN", key] -> {:ok, {:llen, key}}
+            ["LREM", key, value] -> {:ok, {:lrem, key, value}}
             ["RPOPLPUSH", key1, key2] -> {:ok, {:rpoplpush, key1, key2}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
@@ -69,6 +71,16 @@ defmodule Cache.Command do
     def run({:lpush, key, values}) do
         Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
         Storage.lpush(key, values)
+    end
+
+    def run({:llen, key}) do
+        Logger.info("LLEN #{key}")
+        Storage.llen(key)
+    end
+
+    def run({:lrem, key, value}) do
+        Logger.info("LREM  #{value} in #{key}")
+        Storage.lrem(key, value)
     end
 
     def run({:rpoplpush, key1, key2}) do

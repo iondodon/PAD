@@ -38,6 +38,6 @@ defmodule Cache.MessageListener do
 
     defp send_to_client(client, result) do
         response = Utils.type_and_value(result)
-        :gen_tcp.send(client, "#{response} \r\n\n")
+        :gen_tcp.send(client, "#{response} \r\n")
     end
 end

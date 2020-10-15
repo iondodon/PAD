@@ -79,6 +79,30 @@ defmodule Cache.Storage do
         end
     end
 
+    def llen(key) do
+        Agent.get(__MODULE__, fn storage ->
+            list = Map.get(storage, key, [])
+            Kernel.inspect(length(list))
+        end)
+    end
+
+    def lrem(key, item) do
+        storage = get_storage()
+
+        IO.inspect(key)
+        IO.inspect(item)
+
+        list = Map.get(storage, key)
+        if list != :nil do
+            new_list = Enum.filter(list, fn value -> value != item end)
+            new_map = Map.put(storage, key, new_list)
+            update_storage(new_map)
+            length(list) - length(new_list)
+        else
+            0
+        end
+    end
+
     def rpoplpush(key1, key2) do
         storage = get_storage()
         list1 = Map.get(storage, key1)
@@ -90,12 +114,12 @@ defmodule Cache.Storage do
             if length(list1) == 0 do
                 :empy_list
             else
-                # rpop
-                {last, list1_rest} = List.pop_at(list1, length(list1) - 1)
-                #lpush
-                list2 = [last] ++ list2
-    
+                list1 = Map.get(storage, key1)
+                {last, list1_rest} = List.pop_at(list1, -1)
                 storage = Map.put(storage, key1, list1_rest)
+                
+                list2 = Map.get(storage, key2)
+                list2 = [last] ++ list2
                 storage = Map.put(storage, key2, list2)
     
                 update_storage(storage)

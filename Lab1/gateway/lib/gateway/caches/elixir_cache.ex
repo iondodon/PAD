@@ -12,7 +12,8 @@ defmodule Gateway.Cache.ECache do
     end
 
     def command(command) do
-        GenServer.call(__MODULE__, {:command, command})
+        cache_response = GenServer.call(__MODULE__, {:command, command})
+        parse_response(cache_response)
     end
 
 
@@ -38,6 +39,26 @@ defmodule Gateway.Cache.ECache do
                 {:stop, Kernel.inspect(reason), Kernel.inspect(reason), socket}
             {:ok, data} ->
                 {:reply, data, socket}
+        end
+    end
+
+
+    defp parse_response(response) do
+        response = String.trim(response, " \r\n")
+        case response do
+            "(float) " <> value -> elem(Float.parse(value), 0)
+            "(integer) " <> value -> elem(Integer.parse(value), 0)
+            "(boolean) " <> value -> value
+            "(atom) " <> value -> String.to_atom(value)
+            "(binary) " <> value -> value
+            "(function) " <> value -> value
+            "(list) " <> values ->
+                values = String.split(values)
+                Enum.reduce(values, [], fn value, list -> 
+                    list ++ [value] 
+                end)
+            "(tuple) " <> tuple -> tuple
+            "(idunno) " <> _rest -> "idunno"
         end
     end
 end
