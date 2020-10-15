@@ -51,13 +51,14 @@ defmodule Cache.Storage do
         if value != :nil do
             case Integer.parse(value) do
                 {value, _} -> 
-                    value = value + 1
+                    value = Kernel.inspect(value + 1)
                     set(key, value)
                     Kernel.inspect(value)
                 :error -> :error
             end
         else
-            value
+            Agent.update(__MODULE__, fn storage -> Map.put(storage, key, "0") end)
+            "0"
         end
     end
 
@@ -88,9 +89,6 @@ defmodule Cache.Storage do
 
     def lrem(key, item) do
         storage = get_storage()
-
-        IO.inspect(key)
-        IO.inspect(item)
 
         list = Map.get(storage, key)
         if list != :nil do
