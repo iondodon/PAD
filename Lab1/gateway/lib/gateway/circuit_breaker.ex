@@ -5,12 +5,12 @@ defmodule Service.CircuiBreaker do
     @scheme "http://"
     @feilures_limit Application.get_env(:gateway, :failures_limit, 3)
 
-    def request(%{method: method, path: path, body: body, headers: headers}) do
-        unless LoadBalancer.any_available? do
+    def request(%{service: service, method: method, path: path, body: body, headers: headers}) do
+        unless LoadBalancer.any_available?(service) do
             raise "No service available."
         end
 
-        service_address = LoadBalancer.next()
+        service_address = LoadBalancer.next(service)
         url = @scheme <> service_address <> path
         
         case HttpClient.request(method, url, body, headers) do

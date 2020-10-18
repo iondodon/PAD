@@ -21,7 +21,7 @@ PORT = ENV['PORT'] || '3000'
 RestClient::Request.execute(
   method: :post,
   url: GATEWAY_ADDRESS,
-  payload: { address: "#{IP}:#{PORT}" }
+  payload: { address: "#{IP}:#{PORT}", service: "menus" }
 )
 
 set :bind, IP
