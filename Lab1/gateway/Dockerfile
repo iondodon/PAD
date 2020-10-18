@@ -1,8 +1,8 @@
 FROM elixir:1.9.4
 
-COPY ./ /cache
-WORKDIR /cache
-EXPOSE 6666
+COPY ./ /gateway
+WORKDIR /gateway
+EXPOSE 4000
 
 RUN rm -rd _build
 RUN mix local.hex --force

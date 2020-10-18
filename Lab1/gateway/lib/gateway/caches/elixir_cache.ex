@@ -4,7 +4,7 @@ defmodule Gateway.Cache.ECache do
 
     @recv_data_length 0
 
-    @ip Application.get_env(:gateway, :elixir_cache_host, {127, 0, 0, 1})
+    @ip Application.get_env(:gateway, :elixir_cache_host, {172, 17, 0, 1})
     @port Application.get_env(:gateway, :elixir_cache_port, 6666)
     
     def start_link(_args) do
