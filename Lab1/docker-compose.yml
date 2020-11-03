@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+    mysqldb:
+        image: mysql:8.0
+        container_name: pbl-mysqldb
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        environment:
+            MYSQL_DATABASE: testdb
+            MYSQL_ROOT_PASSWORD: root
+        ports: 
+            - 3306:3306
+
+    mongodb:
+        image: mongo
+        container_name: pbl-mongodb
+        restart: always
+        # environment:
+        #   MONGO_INITDB_ROOT_USERNAME: root
+        #   MONGO_INITDB_ROOT_PASSWORD: example
+        ports: 
+            - 27017:27017
+    
+    cache:
+        build: ./cache
+        # image: cache:latest
+        container_name: pbl-cache
+        tty: true
+        ports: 
+            - 6666:6666
+
+    gateway:
+        build: ./gateway
+        # image: gateway:latest
+        container_name: pbl-gateway
+        depends_on: [cache]
+        expose: [4000]
+        tty: true
+        ports: 
+            - 4000:4000
+
+    orders-service:
+        image: orders-service
+        container_name: pbl-orders-service
+        ports: 
+            - 8081:8081
+    
+    # reports-service:
+    #     build: ./reports-service
+    #     # image: reports-service
+    #     container_name: pbl-reports-service
+    #     tty: true
+    #     ports: 
+    #         - 8080:8080
+    #     depends_on: [mysqldb, gateway]
