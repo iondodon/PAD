@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+    cache:
+        build: ./cache
+        container_name: pbl-cache
+        tty: true
+        ports: 
+            - 6666:6666
+
+    gateway:
+        build: ./gateway
+        container_name: pbl-gateway
+        depends_on: [cache]
+        tty: true
+        ports: 
+            - 4000:4000
+        
+    postgres:
+        build:
+            context: ./postgres
+            args:
+            - POSTGRES_VERSION=13
+        container_name: pbl-postgres
+        volumes:
+            - ./postgres/data:/var/lib/postgresql/data
+            - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_DB=orders_db
+            - POSTGRES_USER=default_user
+            - POSTGRES_PASSWORD=secret
+
+    orders-service:
+        build: ./orders-service
+        container_name: pbl-orders-service
+        volumes:
+            - ./orders-service:/orders-service
+        tty: true
+        depends_on: [postgres]
+        ports:
+            - 8080-8090:8080-8090
