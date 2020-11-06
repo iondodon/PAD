@@ -36,6 +36,7 @@ services:
         container_name: pbl-orders-service
         volumes:
             - ./orders-service:/orders-service
+            - ~/.m2:/root/.m2
         tty: true
         depends_on: [postgres]
         ports:

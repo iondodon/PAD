@@ -1,7 +1,7 @@
 package com.utm.md.orders.controller;
 
-import com.utm.md.orders.Service.orders.OrderService;
-import com.utm.md.orders.dto.OrdeerDto;
+import com.utm.md.orders.Service.items.ItemService;
+import com.utm.md.orders.dto.ItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(path = "/item")
 @RequiredArgsConstructor
-@RequestMapping(path = "/order")
-public class OrdersController {
-    private final OrderService orderService;
+public class ItemController {
+    private final ItemService itemService;
 
     @RequestMapping(
-            method = {RequestMethod.POST},
-            path = "/"
+            path = "/",
+            method = RequestMethod.POST
     )
-    public ResponseEntity<String> createOrder(@RequestBody OrdeerDto ordeerDto) {
-        orderService.createOrder(ordeerDto);
+    public ResponseEntity<String> createItem(@RequestBody ItemDto itemDto) {
+        itemService.createItem(itemDto);
         return new ResponseEntity<>("Created", HttpStatus.CREATED);
     }
 
