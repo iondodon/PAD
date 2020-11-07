@@ -1,8 +1,19 @@
 {
   "properties": [
     {
-      "name": "org.quartz.jobStore.class",
+      "name": "service.name",
       "type": "java.lang.String",
-      "description": "Description for org.quartz.jobStore.class."
-  }
-] }
+      "description": "Description for service.name."
+    },
+    {
+      "name": "gateway.address",
+      "type": "java.lang.String",
+      "description": "Description for gateway.address."
+    },
+    {
+      "name": "gateway.port",
+      "type": "java.lang.String",
+      "description": "Description for gateway.port."
+    }
+  ]
+}

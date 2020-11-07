@@ -1,7 +1,7 @@
 defmodule Gateway.Supervisor do
   use Supervisor
 
-  @gateway_port Application.get_env(:gateway, :gateway_port, 4000)
+  @gateway_port Application.get_env(:gateway, :gateway_port, 7171)
 
   def start_link do
     Supervisor.start_link(__MODULE__, [], name: GatewaySupervisor)

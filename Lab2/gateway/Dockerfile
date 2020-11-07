@@ -8,4 +8,4 @@ RUN mix deps.get
 
 CMD iex -S mix
 
-EXPOSE 4000
+EXPOSE 7171
