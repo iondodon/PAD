@@ -1,4 +1,4 @@
-package com.utm.md.orders.Service.orders;
+package com.utm.md.orders.service.orders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.utm.md.orders.dto.OrdeerDto;

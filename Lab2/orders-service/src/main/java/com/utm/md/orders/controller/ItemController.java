@@ -1,6 +1,6 @@
 package com.utm.md.orders.controller;
 
-import com.utm.md.orders.Service.items.ItemService;
+import com.utm.md.orders.service.items.ItemService;
 import com.utm.md.orders.dto.ItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

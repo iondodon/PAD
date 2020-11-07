@@ -1,4 +1,4 @@
-package com.utm.md.orders.Service.items;
+package com.utm.md.orders.service.items;
 
 import com.utm.md.orders.dto.ItemDto;
 
