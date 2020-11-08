@@ -8,9 +8,10 @@ RUN apt update
 RUN apt install maven -y
 
 #RUN mvn clean install
-#CMD java -jar -Dserver.port=8080 target/*.jar
 
-ARG SERVICE_PORT=${SERVICE_PORT}
-CMD mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=${SERVICE_PORT}
+#ARG SERVICE_PORT
+#CMD java -jar -Dserver.port=${SERVICE_PORT} target/*.jar
+#CMD mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=${SERVICE_PORT}
+CMD mvn spring-boot:run
 
-EXPOSE 8080-8090
+# EXPOSE 8080

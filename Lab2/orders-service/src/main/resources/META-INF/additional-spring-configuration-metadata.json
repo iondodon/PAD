@@ -14,6 +14,16 @@
       "name": "gateway.port",
       "type": "java.lang.String",
       "description": "Description for gateway.port."
+    },
+    {
+      "name": "service.port",
+      "type": "java.lang.String",
+      "description": "Description for service.port."
+    },
+    {
+      "name": "service.address",
+      "type": "java.lang.String",
+      "description": "Description for service.address."
     }
   ]
 }

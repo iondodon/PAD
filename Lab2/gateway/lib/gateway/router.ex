@@ -13,11 +13,19 @@ defmodule Gateway.Router do
     )
     plug(:dispatch)
 
+    defp rest_path(full_path) do
+        case full_path do
+            "/orders-service" <> rest -> rest
+            "/menus-service" <> rest -> rest
+            "/reports-service" <> rest -> rest
+        end
+    end
+
     defp handle_requests(conn, service) do
         request = %{
             service: service,
             method: String.to_atom(String.downcase(conn.method, :default)),
-            path: conn.request_path,
+            path: rest_path(conn.request_path),
             body: conn.body_params,
             headers: conn.req_headers
         }
@@ -35,9 +43,9 @@ defmodule Gateway.Router do
         send_resp(conn, 200, service <> " " <> address <> " registed")
     end
 
-    match "/menus/*_rest", do: handle_requests(conn, "menus")
-    match "/reports/*_rest", do: handle_requests(conn, "reports")
-    match "/orders/*_rest", do: handle_requests(conn, "orders")
+    match "/menus-service/*_rest", do: handle_requests(conn, "menus-service")
+    match "/reports-service/*_rest", do: handle_requests(conn, "reports-service")
+    match "/orders-service/*_rest", do: handle_requests(conn, "orders-service")
     
     match _, do: send_resp(conn, 404, "404. not found!")
     defp handle_errors(conn, err), do: send_resp(conn, 500, err.reason.message)

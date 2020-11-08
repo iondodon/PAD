@@ -16,9 +16,11 @@ import java.util.HashMap;
 @Configuration
 public class ServiceDiscoveryConfig {
     @Value("${server.port}")
-    private String serverPort;
+    private String servicePort;
     @Value("${service.name}")
     private String serviceName;
+    @Value("${service.address}")
+    private String serviceAddress;
 
     @Value("${gateway.port}")
     private String gatewayPort;
@@ -29,7 +31,7 @@ public class ServiceDiscoveryConfig {
     public Gateway gateway(HttpClient httpClient, ObjectMapper objectMapper) {
         try {
             HashMap<String, String> map = new HashMap<>();
-            map.put("address", serviceName + ":" + serverPort);
+            map.put("address", serviceAddress + ":" + servicePort);
             map.put("service", serviceName);
 
             String requestBody = objectMapper

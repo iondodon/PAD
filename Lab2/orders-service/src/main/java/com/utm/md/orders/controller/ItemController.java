@@ -3,6 +3,7 @@ package com.utm.md.orders.controller;
 import com.utm.md.orders.service.items.ItemService;
 import com.utm.md.orders.dto.ItemDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 @RequestMapping(path = "/item")
 @RequiredArgsConstructor
 public class ItemController {
@@ -22,6 +24,7 @@ public class ItemController {
     )
     public ResponseEntity<String> createItem(@RequestBody ItemDto itemDto) {
         itemService.createItem(itemDto);
+        log.debug("Creating Item " + itemDto);
         return new ResponseEntity<>("Created", HttpStatus.CREATED);
     }
 

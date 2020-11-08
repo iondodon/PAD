@@ -13,5 +13,4 @@ defmodule LoadBalancer do
     def next(service) do
         ECache.command("RPOPLPUSH #{service} #{service}")
     end
-
 end

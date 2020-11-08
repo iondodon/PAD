@@ -34,27 +34,39 @@ services:
     orders-service1:
         build: 
             context: ./orders-service
-            args:
-                - SERVICE_PORT=8080
+            # args:
+            #     - SERVICE_PORT=8080
         container_name: pbl-orders-service1
         volumes:
             - ./orders-service:/orders-service
             - ~/.m2:/root/.m2
         tty: true
         depends_on: [postgres, gateway]
+        environment: 
+            - SERVICE_PORT=8080
+            - SERVICE_NAME=orders-service
+            - SERVICE_ADDRESS=orders-service1
+            - GATEWAY_ADDRESS=gateway
+            - GATEWAY_PORT=7171
         ports:
-            - 8080-8090:8080-8090
+            - 8080:8080
 
-    # orders-service2:
-    #     build: 
-    #         context: ./orders-service
-    #         args:
-    #             - SERVICE_PORT=8081
-    #     container_name: pbl-orders-service2
-    #     volumes:
-    #         - ./orders-service:/orders-service
-    #         - ~/.m2:/root/.m2
-    #     tty: true
-    #     depends_on: [postgres, gateway]
-    #     ports:
-    #         - 8080-8090:8080-8090
+    orders-service2:
+        build: 
+            context: ./orders-service
+            # args:
+            #     - SERVICE_PORT=8081
+        container_name: pbl-orders-service2
+        volumes:
+            - ./orders-service:/orders-service
+            - ~/.m2:/root/.m2
+        tty: true
+        depends_on: [postgres, gateway]
+        environment: 
+            - SERVER_PORT=8081
+            - SERVICE_NAME=orders-service
+            - SERVICE_ADDRESS=orders-service2
+            - GATEWAY_ADDRESS=gateway
+            - GATEWAY_PORT=7171
+        ports:
+            - 8081:8081
