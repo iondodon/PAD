@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -20,11 +22,21 @@ public class OrdersController {
 
     @RequestMapping(
             method = {RequestMethod.POST},
-            path = "/"
+            path = ""
     )
     public ResponseEntity<String> createOrder(@RequestBody OrdeerDto ordeerDto) {
         orderService.createOrder(ordeerDto);
-        log.debug("Creating order " + ordeerDto);
+        log.info("Creating order " + ordeerDto);
         return new ResponseEntity<>("Created", HttpStatus.CREATED);
+    }
+
+    @RequestMapping(
+            path = "",
+            method = RequestMethod.GET
+    )
+    public ResponseEntity<Collection<OrdeerDto>> getAllOrders() {
+        log.info("Get all orders");
+        Collection<OrdeerDto> ordeerDtos = orderService.getAllOrders();
+        return new ResponseEntity<>(ordeerDtos, HttpStatus.OK);
     }
 }

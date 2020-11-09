@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
+
 @RestController
 @Slf4j
 @RequestMapping(path = "/item")
@@ -19,13 +21,22 @@ public class ItemController {
     private final ItemService itemService;
 
     @RequestMapping(
-            path = "/",
+            path = "",
             method = RequestMethod.POST
     )
     public ResponseEntity<String> createItem(@RequestBody ItemDto itemDto) {
         itemService.createItem(itemDto);
-        log.debug("Creating Item " + itemDto);
+        log.info("Creating Item " + itemDto);
         return new ResponseEntity<>("Created", HttpStatus.CREATED);
     }
 
+    @RequestMapping(
+            path = "",
+            method = RequestMethod.GET
+    )
+    public ResponseEntity<Collection<ItemDto>> allItems() {
+        log.info("Get all items");
+        Collection<ItemDto> items = itemService.getAllItems();
+        return new ResponseEntity<>(items, HttpStatus.OK);
+    }
 }

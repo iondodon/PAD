@@ -2,9 +2,9 @@ package com.utm.md.orders.service.orders;
 
 import com.utm.md.orders.dto.OrdeerDto;
 
-import java.util.UUID;
+import java.util.Collection;
 
 public interface OrderService {
     void createOrder(OrdeerDto ordeerDto);
-    void setPrepared(UUID ordeerID);
+    Collection<OrdeerDto> getAllOrders();
 }
