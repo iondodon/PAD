@@ -16,7 +16,12 @@ public class Ordeer {
     @Setter(AccessLevel.NONE)
     private UUID id;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany
+    @JoinTable(
+            name = "ordeers_items",
+            joinColumns = { @JoinColumn(name = "ordeer_id") },
+            inverseJoinColumns = { @JoinColumn(name = "item_id") }
+    )
     private Collection<Item> items;
 
     private Boolean isPrepared;

@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -23,23 +24,28 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ObjectMapper objectMapper;
+    private final Executor executor;
 
     @Override
     public void createOrder(OrdeerDto ordeerDto) {
         Ordeer ordeer = objectMapper.convertValue(ordeerDto, Ordeer.class);
         Ordeer createdOrdeer = orderRepository.save(ordeer);
-        CompletableFuture.runAsync(() -> completeOrder(createdOrdeer));
+        log.info("Completing...");
+        CompletableFuture.runAsync(() -> {
+            completeOrder(createdOrdeer);
+            log.info("aaaaaaaaaaaa");
+        }, executor);
+        log.info("Completed!");
     }
 
     @SneakyThrows
+    @Async("threadPoolTaskExecutor")
     public void completeOrder(Ordeer ordeer) {
-        log.info("Completing...");
         TimeUnit.SECONDS.sleep(10);
         Ordeer persistedOrder = orderRepository.getOne(ordeer.getId());
         Assert.notNull(persistedOrder, "Order not found.");
         persistedOrder.setIsPrepared(true);
         orderRepository.save(persistedOrder);
-        log.info("Completed!");
     }
     
     @Override
