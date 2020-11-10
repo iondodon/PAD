@@ -15,21 +15,6 @@ services:
         ports: 
             - 7171:7171
 
-    mongo:
-        build: 
-            context: ./mongo
-            args:
-                - MONGO_VERSION=4
-        container_name: pbl-mongo
-        ports:
-            - 27017:27017
-        volumes:
-            - ./mongo/data:/data/db
-            - ./mongo/mongo_config:/data/configdb
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: secret
-
     postgres:
         build:
             context: ./postgres
@@ -85,3 +70,37 @@ services:
             - GATEWAY_PORT=7171
         ports:
             - 8081:8081
+
+    mongo:
+        build: 
+            context: ./mongo
+            args:
+                - MONGO_VERSION=4
+        container_name: pbl-mongo
+        ports:
+            - 27017:27017
+        volumes:
+            - ./mongo/data:/data/db
+            - ./mongo/mongo_config:/data/configdb
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: secret
+
+    reports-service1:
+        build:
+            context: ./reports-service
+            args:
+                - NODE_VERSION=15.1.0
+        container_name: pbl_reports_service1
+        ports:
+            - 9090:9090
+        tty: true
+        volumes:
+            - ./reports-service:/reports-service
+        environment:
+            - SERVER_PORT=9090
+            - SERVICE_NAME=reports-service
+            - SERVICE_ADDRESS=reports-service1
+            - GATEWAY_ADDRESS=gateway
+            - GATEWAY_PORT=7171
+        depends_on: [mongo, gateway]
