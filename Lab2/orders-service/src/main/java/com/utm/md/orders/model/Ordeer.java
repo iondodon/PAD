@@ -30,7 +30,6 @@ public class Ordeer {
             joinColumns = { @JoinColumn(name = "ordeer_id") },
             inverseJoinColumns = { @JoinColumn(name = "item_id") }
     )
-    @JsonIgnore
     private Collection<Item> items;
 
     private Boolean isPrepared;

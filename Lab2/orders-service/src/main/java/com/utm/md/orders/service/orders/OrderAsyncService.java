@@ -28,6 +28,5 @@ public class OrderAsyncService {
         Assert.notNull(persistedOrder, "Order not found.");
         persistedOrder.setIsPrepared(true);
         orderRepository.save(persistedOrder);
-        log.info("Prepared");
     }
 }

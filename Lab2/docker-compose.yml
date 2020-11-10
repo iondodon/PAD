@@ -15,6 +15,21 @@ services:
         ports: 
             - 7171:7171
 
+    mongo:
+        build: 
+            context: ./mongo
+            args:
+                - MONGO_VERSION=4
+        container_name: pbl-mongo
+        ports:
+            - 27017:27017
+        volumes:
+            - ./mongo/data:/data/db
+            - ./mongo/mongo_config:/data/configdb
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: secret
+
     postgres:
         build:
             context: ./postgres
@@ -51,22 +66,22 @@ services:
         ports:
             - 8080:8080
 
-    # orders-service2:
-    #     build: 
-    #         context: ./orders-service
-    #         # args:
-    #         #     - SERVICE_PORT=8081
-    #     container_name: pbl-orders-service2
-    #     volumes:
-    #         - ./orders-service:/orders-service
-    #         - ~/.m2:/root/.m2
-    #     tty: true
-    #     depends_on: [postgres, gateway]
-    #     environment: 
-    #         - SERVER_PORT=8081
-    #         - SERVICE_NAME=orders-service
-    #         - SERVICE_ADDRESS=orders-service2
-    #         - GATEWAY_ADDRESS=gateway
-    #         - GATEWAY_PORT=7171
-    #     ports:
-    #         - 8081:8081
+    orders-service2:
+        build: 
+            context: ./orders-service
+            # args:
+            #     - SERVICE_PORT=8081
+        container_name: pbl-orders-service2
+        volumes:
+            - ./orders-service:/orders-service
+            - ~/.m2:/root/.m2
+        tty: true
+        depends_on: [postgres, gateway]
+        environment: 
+            - SERVER_PORT=8081
+            - SERVICE_NAME=orders-service
+            - SERVICE_ADDRESS=orders-service2
+            - GATEWAY_ADDRESS=gateway
+            - GATEWAY_PORT=7171
+        ports:
+            - 8081:8081

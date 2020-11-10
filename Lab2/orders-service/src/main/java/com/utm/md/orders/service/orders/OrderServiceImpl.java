@@ -26,9 +26,7 @@ public class OrderServiceImpl implements OrderService {
     public void createOrder(OrdeerDto ordeerDto) {
         final Ordeer ordeer = objectMapper.convertValue(ordeerDto, Ordeer.class);
         final Ordeer createdOrdeer = orderRepository.save(ordeer);
-        log.info("Completing...");
         orderAsyncService.completeOrder(createdOrdeer.getId());
-        log.info("Completed!");
     }
 
     @Override
