@@ -4,7 +4,7 @@ services:
         build: ./cache
         container_name: pbl-cache
         tty: true
-        ports: 
+        ports:
             - 6666:6666
 
     gateway:
@@ -12,7 +12,7 @@ services:
         container_name: pbl-gateway
         depends_on: [cache]
         tty: true
-        ports: 
+        ports:
             - 7171:7171
 
     postgres:
@@ -32,7 +32,7 @@ services:
             - POSTGRES_PASSWORD=secret
 
     orders-service1:
-        build: 
+        build:
             context: ./orders-service
             # args:
             #     - SERVICE_PORT=8080
@@ -42,7 +42,7 @@ services:
             - ~/.m2:/root/.m2
         tty: true
         depends_on: [postgres, gateway]
-        environment: 
+        environment:
             - SERVICE_PORT=8080
             - SERVICE_NAME=orders-service
             - SERVICE_ADDRESS=orders-service1
@@ -52,7 +52,7 @@ services:
             - 8080:8080
 
     orders-service2:
-        build: 
+        build:
             context: ./orders-service
             # args:
             #     - SERVICE_PORT=8081
@@ -62,7 +62,7 @@ services:
             - ~/.m2:/root/.m2
         tty: true
         depends_on: [postgres, gateway]
-        environment: 
+        environment:
             - SERVER_PORT=8081
             - SERVICE_NAME=orders-service
             - SERVICE_ADDRESS=orders-service2
@@ -72,7 +72,7 @@ services:
             - 8081:8081
 
     mongo:
-        build: 
+        build:
             context: ./mongo
             args:
                 - MONGO_VERSION=4

@@ -3,4 +3,5 @@ FROM node:${NODE_VERSION}
 
 WORKDIR /reports-service
 
-# CMD node server.js
+#CMD npm start
+CMD sleep 10 && node server.js
