@@ -3,4 +3,4 @@ FROM node:${NODE_VERSION}
 
 WORKDIR /reports-service
 
-CMD node server.js
+# CMD node server.js

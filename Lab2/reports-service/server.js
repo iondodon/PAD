@@ -1,9 +1,10 @@
-let http = require('http')
+const http = require("http")
+const express = require("express")
 
-http.createServer((req, res) => {
-  res.write('Hello World!')
-  res.end()
-}).listen(9090)
+const app = express()
 
+app.get("/", (_req, res) => {
+	res.send("response")
+})
 
-console.log("Listening on port 9090.")
+app.listen(9090)
