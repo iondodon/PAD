@@ -103,4 +103,23 @@ services:
             - SERVICE_ADDRESS=reports-service1
             - GATEWAY_ADDRESS=gateway
             - GATEWAY_PORT=7171
-        depends_on: [mongo, gateway]
+        depends_on: [mongo, gateway, orders-service1, orders-service2]
+
+    reports-service2:
+        build:
+            context: ./reports-service
+            args:
+                - NODE_VERSION=15.1.0
+        container_name: pbl_reports_service2
+        ports:
+            - 9091:9091
+        tty: true
+        volumes:
+            - ./reports-service:/reports-service
+        environment:
+            - SERVER_PORT=9091
+            - SERVICE_NAME=reports-service
+            - SERVICE_ADDRESS=reports-service2
+            - GATEWAY_ADDRESS=gateway
+            - GATEWAY_PORT=7171
+        depends_on: [mongo, gateway, orders-service1, orders-service2]

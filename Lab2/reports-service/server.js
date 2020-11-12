@@ -5,6 +5,7 @@ const app = express()
 const reportsRoutes = require("./routes/reports")
 const cors = require("cors")
 const register = require("./startup/register")
+const preparedOrdersListener = require("./jobs/preparedOrdersListener")
 require("dotenv/config")
 
 
@@ -26,5 +27,6 @@ mongoose.connect(
 
 
 register()
+preparedOrdersListener()
 
-app.listen(9090)
+app.listen(process.env.SERVER_PORT || 9090)
