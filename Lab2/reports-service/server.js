@@ -3,9 +3,9 @@ const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const app = express()
 const reportsRoutes = require("./routes/reports")
+const ordersRoutes = require("./routes/orders")
 const cors = require("cors")
 const register = require("./startup/register")
-const preparedOrdersListener = require("./jobs/preparedOrdersListener")
 require("dotenv/config")
 
 
@@ -14,6 +14,7 @@ app.use(bodyParser.json())
 
 
 app.use("/report", reportsRoutes)
+app.use("/order", ordersRoutes)
 app.get("/", (_req, res) => {
 	res.send("Welcome to reports service!")
 })
@@ -27,6 +28,5 @@ mongoose.connect(
 
 
 register()
-preparedOrdersListener()
 
 app.listen(process.env.SERVER_PORT || 9090)

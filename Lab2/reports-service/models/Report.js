@@ -14,8 +14,8 @@ const ReportSchema = mongoose.Schema({
 		default: Date.now,
 		required: true
 	},
-	reports: {
-		type: [],
+	preparedOrders: {
+		type: [[Object]],
 		required: true
 	}
 })

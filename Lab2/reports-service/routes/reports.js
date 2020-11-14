@@ -1,5 +1,6 @@
 const express = require("express")
 const Report = require("../models/Report")
+
 const router = express.Router()
 
 router.get("/", async (_req, res) => {
@@ -13,16 +14,13 @@ router.get("/", async (_req, res) => {
 	}
 })
 
-// router.get("/orders/prepared", (_req, _res) => {
-// 	console.log("Get all prepared orders")
-// })
-
 router.get("/:reportID", async (req, res) => {
 	console.log("Get report " + req.params.reportID)
 	try {
 		const report = await Report.findById(req.params.reportID)
-		if(!report) res.status(404).json({ message: "resource not found" })
-		res.status(200).json(report)
+		report ?
+			res.status(200).json(report) :
+			res.status(404).json({ message: "resource not found" })
 	} catch(err) {
 		console.log(err)
 		res.status(500).json({ message: err })
@@ -53,9 +51,9 @@ router.put("/:reportID", async (req, res) => {
 				}
 			}
 		)
-		if(response["nModified"] == 0)
-			res.status(404).json({ message: "resource not found" })
-		res.status(200).json(response)
+		response["nModified"] == 0 ?
+			res.status(404).json({ message: "resource not found" }) :
+			res.status(200).json(response)
 	} catch(err) {
 		console.log(err)
 		res.status(500).json({ message: err })
@@ -66,9 +64,9 @@ router.delete("/:reportID", async (req, res) => {
 	console.log("Delete report " + req.params.reportID)
 	try {
 		const response = await Report.deleteOne({ _id: req.params.reportID })
-		if(response["deletedCount"] == 0)
-			res.status(404).json({ message: "resource not found" })
-		res.status(200).json(response)
+		response["deletedCount"] == 0 ?
+			res.status(404).json({ message: "resource not found" }) :
+			res.status(200).json(response)
 	} catch(err) {
 		console.log(err)
 		res.status(500).json({ message: err })
