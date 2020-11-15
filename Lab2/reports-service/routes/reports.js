@@ -1,7 +1,8 @@
 const express = require("express")
 const Report = require("../models/Report")
-
+const axios = require("axios")
 const router = express.Router()
+const saveNewReport = require("../services/reportService")
 
 router.get("/", async (_req, res) => {
 	console.log("Get all reports")
@@ -13,6 +14,7 @@ router.get("/", async (_req, res) => {
 		res.status(500).json({ message: err })
 	}
 })
+
 
 router.get("/:reportID", async (req, res) => {
 	console.log("Get report " + req.params.reportID)
@@ -27,6 +29,7 @@ router.get("/:reportID", async (req, res) => {
 	}
 })
 
+
 router.post("/", async (req, res) => {
 	console.log("Post report")
 	const report = new Report(req.body)
@@ -39,6 +42,7 @@ router.post("/", async (req, res) => {
 		res.status(500).json({ message: err })
 	}
 })
+
 
 router.put("/:reportID", async (req, res) => {
 	console.log("Update report " + req.params.reportID)
@@ -60,6 +64,7 @@ router.put("/:reportID", async (req, res) => {
 	}
 })
 
+
 router.delete("/:reportID", async (req, res) => {
 	console.log("Delete report " + req.params.reportID)
 	try {
@@ -70,6 +75,21 @@ router.delete("/:reportID", async (req, res) => {
 	} catch(err) {
 		console.log(err)
 		res.status(500).json({ message: err })
+	}
+})
+
+
+router.post("/make", async (req, res) => {
+	console.log("Get all prepared orders")
+
+	try {
+		const response = await axios.get(`http://${process.env.GATEWAY_ADDRESS}:${process.env.GATEWAY_PORT}/orders-service/order`)
+		if(response.data) {
+			const preparedOrders = response.data.filter(order => order["isPrepared"] == true)
+			saveNewReport(req, res, preparedOrders)
+		}
+	}catch(err) {
+		res.status(500).send(err)
 	}
 })
 

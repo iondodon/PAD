@@ -3,7 +3,6 @@ const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const app = express()
 const reportsRoutes = require("./routes/reports")
-const ordersRoutes = require("./routes/orders")
 const cors = require("cors")
 const register = require("./startup/register")
 require("dotenv/config")
@@ -14,7 +13,6 @@ app.use(bodyParser.json())
 
 
 app.use("/report", reportsRoutes)
-app.use("/order", ordersRoutes)
 app.get("/", (_req, res) => {
 	res.send("Welcome to reports service!")
 })
