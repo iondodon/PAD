@@ -4,6 +4,8 @@ services:
         build: ./cache
         container_name: pbl-cache
         tty: true
+        volumes: 
+            - ./cache:/cache
         ports:
             - 6666:6666
 
@@ -12,6 +14,8 @@ services:
         container_name: pbl-gateway
         depends_on: [cache]
         tty: true
+        volumes: 
+            - ./gateway:/gateway
         ports:
             - 7171:7171
 
@@ -122,4 +126,4 @@ services:
     #         - SERVICE_ADDRESS=reports-service2
     #         - GATEWAY_ADDRESS=gateway
     #         - GATEWAY_PORT=7171
-    #     depends_on: [mongo, gateway, orders-service1, orders-service2]
+    #     depends_on: [mongo, gateway, orders-service1]

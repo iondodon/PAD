@@ -1,7 +1,7 @@
 defmodule Gateway.Router do
     use Plug.Router
     use Plug.ErrorHandler
-    alias Service.CircuiBreaker
+    alias Service.CircuitBreaker
     alias Gateway.Cache.ECache
 
     plug(:match)
@@ -30,9 +30,15 @@ defmodule Gateway.Router do
             headers: conn.req_headers
         }
 
-        case CircuiBreaker.request(request) do
-            {:ok, response} -> send_resp(conn, response.status_code, response.body)
-            {:error, _reason} -> send_resp(conn, 503, "Service error!")
+        case CircuitBreaker.request(request) do
+            {:ok, response} ->
+                send_resp(conn, response.status_code, response.body)
+            {:error, reason} ->
+                IO.inspect(reason)
+                IO.inspect("Redirecting to a new service instance")
+                handle_requests(conn, service)
+            {:err_no_serv_av, message} ->
+                send_resp(conn, 503, message)
         end
     end
 

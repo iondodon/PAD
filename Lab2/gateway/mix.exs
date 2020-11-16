@@ -17,12 +17,12 @@ defmodule Gateway.MixProject do
             extra_applications: [:logger],
             mod: {Gateway, []},
             env: [
-            elixir_cache_host: {172, 17, 0, 1},
-            elixir_cache_port: 6666,
-            redis_host: "redis",
-            redis_port: 4000,
-            gateway_port: 7171,
-            failures_limit: 3
+                elixir_cache_host: {172, 17, 0, 1},
+                elixir_cache_port: 6666,
+                redis_host: "redis",
+                redis_port: 4000,
+                gateway_port: 7171,
+                failures_limit: 3
             ]
         ]
     end

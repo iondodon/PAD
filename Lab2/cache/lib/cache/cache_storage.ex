@@ -1,6 +1,6 @@
 defmodule Cache.Storage do
     @doc """
-    Atomic values are stored as a string
+    Atomic values are stored as strings
     """
     use Agent
     require Logger
@@ -23,7 +23,7 @@ defmodule Cache.Storage do
 
     def mget(keys) do
         storage = get_storage()
-        Enum.reduce(keys, [], fn key, list -> 
+        Enum.reduce(keys, [], fn key, list ->
             value = Map.get(storage, key)
             list ++ [value]
         end)
@@ -37,7 +37,7 @@ defmodule Cache.Storage do
     end
 
     def delete_keys(keys) do
-        Enum.reduce(keys, 0, fn key, deleted -> 
+        Enum.reduce(keys, 0, fn key, deleted ->
             if Map.has_key?(get_storage(), key) do
                 {_deleted_value, new_map} = Map.pop(get_storage(), key)
                 update_storage(new_map)
@@ -50,7 +50,7 @@ defmodule Cache.Storage do
         value = Agent.get(__MODULE__, fn storage -> storage[key] end)
         if value != :nil do
             case Integer.parse(value) do
-                {value, _} -> 
+                {value, _} ->
                     value = Kernel.inspect(value + 1)
                     set(key, value)
                     Kernel.inspect(value)
@@ -69,13 +69,13 @@ defmodule Cache.Storage do
         if !is_list(list) do
             :not_a_list
         else
-            list = Enum.reduce(values, list, fn value, list -> 
+            list = Enum.reduce(values, list, fn value, list ->
                 [value | list]
             end)
-            
+
             new_map = Map.put(storage, key, list)
             update_storage(new_map)
-            
+
             Kernel.inspect(length(list))
         end
     end
@@ -115,13 +115,13 @@ defmodule Cache.Storage do
                 list1 = Map.get(storage, key1)
                 {last, list1_rest} = List.pop_at(list1, -1)
                 storage = Map.put(storage, key1, list1_rest)
-                
+
                 list2 = Map.get(storage, key2)
                 list2 = [last] ++ list2
                 storage = Map.put(storage, key2, list2)
-    
+
                 update_storage(storage)
-    
+
                 last
             end
         end
