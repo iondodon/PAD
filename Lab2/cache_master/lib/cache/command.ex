@@ -3,7 +3,7 @@ defmodule Cache.Command do
     alias Cache.Storage
     alias Cache.Storage.Extra
 
-    def parse(line) do
+    def parse(line, client_socket) do
         case String.split(line) do
             ["SET", key, value] -> {:ok, {:set, key, value}}
             ["SETNX", key, value] -> {:ok, {:setnx, key, value}}
@@ -18,6 +18,7 @@ defmodule Cache.Command do
             ["RPOPLPUSH", key1, key2] -> {:ok, {:rpoplpush, key1, key2}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
+            ["SETSLAVE", slave_key] -> {:ok, {:setslave, slave_key, client_socket}}
             _ -> {:error, :unknown_command}
           end
     end
@@ -102,5 +103,10 @@ defmodule Cache.Command do
         {sec, _} = Integer.parse(sec)
         ttl = System.os_time(:second) + sec
         Extra.set_key_ttl("ttl#" <> key, ttl)
+    end
+
+    def run({:setslave, slave_key, client_socket}) do
+        Logger.info("SETSLAVE #{slave_key} #{client_socket}")
+        Storage.set_slave(slave_key, client_socket)
     end
 end

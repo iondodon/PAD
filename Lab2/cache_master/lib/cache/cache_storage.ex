@@ -134,4 +134,8 @@ defmodule Cache.Storage do
     defp get_storage() do
         Agent.get(__MODULE__, fn storage -> storage end)
     end
+
+    def set_slave(slave_key, socket) do
+        Agent.update(__MODULE__, fn storage -> Map.put(storage, slave_key, socket) end)
+    end
 end
