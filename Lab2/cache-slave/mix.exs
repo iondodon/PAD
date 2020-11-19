@@ -17,8 +17,8 @@ defmodule Cache.MixProject do
       extra_applications: [:logger],
       mod: {Cache, []},
       env: [
-        master_ip: {127, 0, 0, 1},
-        master_port: 7000
+        master_ip: 'cache-master',
+        master_port: 6666
       ]
     ]
   end

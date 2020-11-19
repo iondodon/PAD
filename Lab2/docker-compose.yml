@@ -19,6 +19,7 @@ services:
         restart: always
         ports:
             - 7000:7000
+        depends_on: [cache-master]
 
     # gateway:
     #     build: ./gateway

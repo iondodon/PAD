@@ -10,7 +10,7 @@ defmodule Cache.BaseSupervisor do
             {Cache.Storage.Extra, %{}},
             {Cache.Storage, %{}},
             {Task.Supervisor, name: Cache.MessageListener.Supervisor},
-            {Cache.ConnectionListener, []},
+            Cache.Connection,
             {Cache.LiveManager, []}
         ]
 
