@@ -13,7 +13,8 @@ defmodule Cache.ConnectionListener do
     end
 
     def accept(port) do
-        {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
+		opts = [:binary, packet: :line, active: false, reuseaddr: true]
+        {:ok, socket} = :gen_tcp.listen(port, opts)
         Logger.info "Accepting connections on port #{port}"
         loop_acceptor(socket)
     end

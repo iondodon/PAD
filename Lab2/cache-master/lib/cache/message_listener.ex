@@ -8,9 +8,11 @@ defmodule Cache.MessageListener do
     def serve(client) do
         {:ok, data} = read_from_client(client)
         {:ok, command} = Cache.Command.parse(data, client)
-        result = Cache.Command.run(command)
 
-        send_to_client(client, result)
+        case Cache.Command.run(command) do
+            :slave_registered -> Logger.info("Slave registered")
+            result_from_slave -> send_to_client(client, result_from_slave)
+        end
 
         serve(client)
     end

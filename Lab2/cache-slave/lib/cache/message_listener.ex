@@ -14,15 +14,19 @@ defmodule Cache.MessageListener do
 
         send_to_client(client, result)
 
+        :timer.sleep(5000)
+
         serve(client)
     end
 
     defp read_from_client(client) do
-        :gen_tcp.recv(client, @recv_length)
+        {:ok, data} = :gen_tcp.recv(client, @recv_length)
+        IO.inspect(data)
+        {:ok, data}
     end
 
     defp send_to_client(client, {:error, :unknown_command}) do
-        # Known error; write to the client
+        # Unknown command error; write to the client
         :gen_tcp.send(client, "UNKNOWN COMMAND\r\n\n")
     end
 

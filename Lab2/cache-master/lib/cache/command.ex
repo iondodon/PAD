@@ -12,10 +12,12 @@ defmodule Cache.Command do
     def run({:pushslave, client_socket}) do
         Logger.info("PUSHSLAVE #{Kernel.inspect(client_socket)}")
         Storage.push_slave(client_socket)
+        :slave_registered
     end
 
     # Command execution on slave
     def run(command) do
         Logger.info("EXECUTE #{command} on slave")
+        IO.inspect(Storage.rpoplpush("slaves", "slaves"))
     end
 end
