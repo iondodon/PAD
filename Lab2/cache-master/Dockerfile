@@ -5,6 +5,6 @@ WORKDIR /cache-master
 
 RUN mix deps.get
 
-#CMD iex -S mix
+CMD iex -S mix
 
-EXPOSE 6666
+EXPOSE 6666 6667

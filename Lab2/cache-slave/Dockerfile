@@ -7,4 +7,4 @@ RUN mix deps.get
 
 RUN apt-get update && apt-get install telnet
 
-#CMD iex -S mix
+CMD iex -S mix
