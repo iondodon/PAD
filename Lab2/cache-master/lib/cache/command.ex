@@ -2,22 +2,15 @@ defmodule Cache.Command do
     require Logger
     alias Cache.Storage
 
-    def parse(line, slave_socket) do
-        case String.split(line) do
-            ["PUSHSLAVE"] -> {:ok, {:pushslave, slave_socket}}
-            _ -> {:ok, line}
-        end
-    end
-
-    def run({:pushslave, client_socket}) do
-        Logger.info("PUSHSLAVE #{Kernel.inspect(client_socket)}")
-        Storage.push_slave(client_socket)
-        :slave_registered
-    end
+    @recv_length 0
 
     # Command execution on slave
     def run(command) do
-        Logger.info("EXECUTE #{command} on slave")
-        IO.inspect(Storage.rpoplpush("slaves", "slaves"))
+        slave_name = Storage.rpoplpush("slaves", "slaves")
+        slave = Storage.get(slave_name)
+        Logger.info("EXECUTE #{command} on slave #{Kernel.inspect(slave)}")
+        :gen_tcp.send(slave, command)
+        {:ok, response_from_slave} = :gen_tcp.recv(slave, @recv_length)
+        response_from_slave
     end
 end

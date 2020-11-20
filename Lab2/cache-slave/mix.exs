@@ -18,7 +18,7 @@ defmodule Cache.MixProject do
       mod: {Cache, []},
       env: [
         master_ip: 'cache-master',
-        master_port: 6666
+        master_port: 6667
       ]
     ]
   end

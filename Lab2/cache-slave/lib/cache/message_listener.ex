@@ -5,45 +5,39 @@ defmodule Cache.MessageListener do
 
     @recv_length 0
 
-    def serve(client) do
-        result = with {:ok, data} <- read_from_client(client),
+    def serve(master_socket) do
+        result = with {:ok, data} <- read_from_master(master_socket),
                    {:ok, command} <- Cache.Command.parse(data),
                    do: Cache.Command.run(command)
 
-        IO.inspect(result)
+        send_to_master(master_socket, result)
 
-        send_to_client(client, result)
-
-        :timer.sleep(5000)
-
-        serve(client)
+        serve(master_socket)
     end
 
-    defp read_from_client(client) do
-        {:ok, data} = :gen_tcp.recv(client, @recv_length)
-        IO.inspect(data)
-        {:ok, data}
+    defp read_from_master(master_socket) do
+        :gen_tcp.recv(master_socket, @recv_length)
     end
 
-    defp send_to_client(client, {:error, :unknown_command}) do
+    defp send_to_master(master_socket, {:error, :unknown_command}) do
         # Unknown command error; write to the client
-        :gen_tcp.send(client, "UNKNOWN COMMAND\r\n\n")
+        :gen_tcp.send(master_socket, "UNKNOWN COMMAND\r\n\n")
     end
 
-    defp send_to_client(_client, {:error, :closed}) do
+    defp send_to_master(_master_socket, {:error, :closed}) do
         # The connection was closed, exit politely
         exit(:shutdown)
     end
 
-    defp send_to_client(client, {:error, error}) do
+    defp send_to_master(master_socket, {:error, error}) do
         # Unknown error; write to the client and exit
         Logger.error(error)
-        :gen_tcp.send(client, "ERROR\r\n")
+        :gen_tcp.send(master_socket, "ERROR\r\n")
         exit(error)
     end
 
-    defp send_to_client(client, result) do
+    defp send_to_master(master_socket, result) do
         response = Utils.type_and_value(result)
-        :gen_tcp.send(client, "#{response} \r\n")
+        :gen_tcp.send(master_socket, "#{response} \r\n")
     end
 end

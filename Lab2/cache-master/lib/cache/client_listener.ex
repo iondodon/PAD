@@ -1,8 +1,8 @@
-defmodule Cache.ConnectionListener do
+defmodule Cache.ClientListener do
     use Task, restart: :permanent
     require Logger
 
-    @cache_port Application.get_env(:cache_port, :port, 6666)
+    @cache_port Application.get_env(:cache, :cache_port, 6666)
 
     def start_link(_args) do
       Task.start_link(__MODULE__, :run, [])
@@ -23,9 +23,9 @@ defmodule Cache.ConnectionListener do
         {:ok, client} = :gen_tcp.accept(socket)
         Logger.info("New client connected #{Kernel.inspect client}")
         {:ok, pid} = Task.Supervisor.start_child(
-          Cache.MessageListener.Supervisor,
-          fn -> Cache.MessageListener.serve(client) end,
-          [restart: :permanent]
+			Cache.MessageListener.Supervisor,
+			fn -> Cache.MessageListener.serve(client) end,
+			[restart: :permanent]
         )
         :ok = :gen_tcp.controlling_process(client, pid)
 
