@@ -1,4 +1,4 @@
-defmodule Cache.MessageListener do
+defmodule Cache.CommandListener do
     require Logger
     @data_length 0
 

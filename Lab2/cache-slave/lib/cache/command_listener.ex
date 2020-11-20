@@ -1,7 +1,5 @@
-defmodule Cache.MessageListener do
+defmodule Cache.CommandListener do
     require Logger
-
-    # client means client socket
 
     @recv_length 0
 

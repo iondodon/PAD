@@ -1,18 +1,17 @@
 defmodule Cache.Connection do
     require Logger
 
-	@master_ip Application.get_env(:cache, :master_ip, 'cache-master')
-	@master_port Application.get_env(:cache, :master_port, 6667)
+	@master_ip Application.get_env(:cache_slave, :master_ip, 'cache-master')
+	@master_port Application.get_env(:caccache_slavehe, :master_port, 6667)
 
 	def connect() do
 		opts = [:binary, :inet, active: false, packet: :line]
 		{:ok, master_socket} = :gen_tcp.connect(@master_ip, @master_port, opts)
-		:gen_tcp.send(master_socket, "PUSHSLAVE\n")
 		Logger.info("Connected to master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
-			Cache.MessageListener.Supervisor,
-			fn -> Cache.MessageListener.serve(master_socket) end,
+			CommandListener.Supervisor,
+			fn -> Cache.CommandListener.serve(master_socket) end,
 			[restart: :permanent]
 		)
 	end

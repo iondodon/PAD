@@ -3,7 +3,7 @@ defmodule Cache.MixProject do
 
   def project do
     [
-      app: :cache,
+      app: :cache_slave,
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
@@ -15,7 +15,7 @@ defmodule Cache.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Cache, []},
+      mod: {CacheSlave, []},
       env: [
         master_ip: 'cache-master',
         master_port: 6667

@@ -9,7 +9,7 @@ defmodule Cache.BaseSupervisor do
         children = [
             {Cache.Storage.Extra, %{}},
             {Cache.Storage, %{}},
-            {Task.Supervisor, name: Cache.MessageListener.Supervisor},
+            {Task.Supervisor, name: CommandListener.Supervisor},
             {Cache.ClientListener, []},
             {Cache.SlaveListener, []},
             {Cache.LiveManager, []}

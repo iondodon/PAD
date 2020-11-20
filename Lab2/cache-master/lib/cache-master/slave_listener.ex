@@ -3,17 +3,17 @@ defmodule Cache.SlaveListener do
 	require Logger
 	alias Cache.Storage
 
-	@port Application.get_env(:cache, :slave_port, 6667)
+	@gateway_for_slave Application.get_env(:cache_master, :gateway_for_slave, 6667)
 
 	def start_link(_args) do
 		Task.start_link(__MODULE__, :run, [])
 	end
 
 	def run() do
-		accept(@port)
+		listen(@gateway_for_slave)
 	end
 
-	def accept(port) do
+	def listen(port) do
 		opts = [:binary, packet: :line, active: false, reuseaddr: true]
 		{:ok, socket} = :gen_tcp.listen(port, opts)
 		Logger.info "Listening slaves on port #{port}"

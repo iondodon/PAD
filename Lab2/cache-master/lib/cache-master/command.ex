@@ -11,6 +11,7 @@ defmodule Cache.Command do
         Logger.info("EXECUTE #{command} on slave #{Kernel.inspect(slave)}")
         :gen_tcp.send(slave, command)
         {:ok, response_from_slave} = :gen_tcp.recv(slave, @recv_length)
+        Logger.info(response_from_slave)
         response_from_slave
     end
 end

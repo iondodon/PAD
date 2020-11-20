@@ -1,4 +1,4 @@
-defmodule Cache do
+defmodule CacheSlave do
   use Application
 
   def start(_type, _args) do
