@@ -3,14 +3,15 @@ defmodule Cache.SlaveListener do
 	require Logger
 	alias Cache.Storage
 
-	@gateway_for_slave Application.get_env(:cache_master, :gateway_for_slave, 6667)
+	@port_for_slave Application.get_env(:cache_master, :port_for_slave, 6667)
+	@recv_length 0
 
 	def start_link(_args) do
 		Task.start_link(__MODULE__, :run, [])
 	end
 
 	def run() do
-		listen(@gateway_for_slave)
+		listen(@port_for_slave)
 	end
 
 	def listen(port) do
@@ -23,13 +24,17 @@ defmodule Cache.SlaveListener do
 	defp loop_acceptor(socket) do
 		{:ok, slave} = :gen_tcp.accept(socket)
 		Logger.info("New slave connected #{Kernel.inspect slave}")
-		register_slave(slave)
+
+		Task.async(fn -> register_slave(slave) end)
 
 		loop_acceptor(socket)
 	end
 
 	defp register_slave(slave) do
 		Logger.info("PUSHSLAVE #{Kernel.inspect(slave)}")
+		{:ok, iodata} = :gen_tcp.recv(slave, @recv_length)
+		{:ok, reg_data} = Poison.decode(iodata)
+		IO.inspect(reg_data)
 		Storage.push_slave(slave)
 	end
 end

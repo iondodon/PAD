@@ -17,8 +17,8 @@ defmodule Cache.MixProject do
       extra_applications: [:logger],
       mod: {CacheMaster, []},
       env: [
-        gateway_for_client: 6666,
-        gateway_for_slave: 6667
+        port_for_client: 6666,
+        port_for_slave: 6667
       ]
     ]
   end
@@ -26,7 +26,7 @@ defmodule Cache.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+		{:poison, "~> 4.0"}
     ]
   end
 end

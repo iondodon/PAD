@@ -1,13 +1,23 @@
 defmodule Cache.Connection do
-    require Logger
+	require Logger
+	require IEx
 
 	@master_ip Application.get_env(:cache_slave, :master_ip, 'cache-master')
-	@master_port Application.get_env(:caccache_slavehe, :master_port, 6667)
+	@master_port Application.get_env(:cache_slave, :master_port, 6667)
+
+	@slave System.get_env("SLAVE", "default")
+	@replica System.get_env("REPLICA", "default")
 
 	def connect() do
 		opts = [:binary, :inet, active: false, packet: :line]
 		{:ok, master_socket} = :gen_tcp.connect(@master_ip, @master_port, opts)
 		Logger.info("Connected to master")
+
+		#IEx.pry
+
+		{:ok, iodata} = Poison.encode(%{slave: @slave, replica: @replica })
+		:ok = :gen_tcp.send(master_socket, iodata <> "\n")
+		Logger.info("Registered in master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
 			CommandListener.Supervisor,
@@ -24,5 +34,4 @@ defmodule Cache.Connection do
 			restart: :permanent
 		}
 	end
-
 end
