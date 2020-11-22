@@ -134,27 +134,4 @@ defmodule Cache.Storage do
     defp get_storage() do
         Agent.get(__MODULE__, fn storage -> storage end)
     end
-
-    def push_slave(socket) do
-        Agent.update(__MODULE__, fn storage ->
-            Map.put(storage, Kernel.inspect(socket), socket)
-        end)
-
-        storage = get_storage()
-        IO.inspect(Map.get(storage, Kernel.inspect(socket)))
-
-        slaves = Map.get(storage, "slaves", [])
-        if !is_list(slaves) do
-            :not_a_list
-        else
-            slaves = [Kernel.inspect(socket) | slaves]
-
-            new_map = Map.put(storage, "slaves", slaves)
-            update_storage(new_map)
-
-            IO.inspect(slaves)
-
-            Kernel.inspect(length(slaves))
-        end
-    end
 end

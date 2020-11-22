@@ -19,8 +19,7 @@ services:
         restart: always
         depends_on: [cache-master]
         environment:
-            - SLAVE=slave1
-            - REPLICA=replica1
+            - SLAVE_NAME=slave1
 
     cache-slave2-replica1:
         build: ./cache-slave
@@ -31,8 +30,7 @@ services:
         restart: always
         depends_on: [cache-master]
         environment:
-            - SLAVE=slave2
-            - REPLICA=replica1
+            - SLAVE_NAME=slave2
 
     # gateway:
     #     build: ./gateway

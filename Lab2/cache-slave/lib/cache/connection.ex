@@ -5,8 +5,8 @@ defmodule Cache.Connection do
 	@master_ip Application.get_env(:cache_slave, :master_ip, 'cache-master')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
 
-	@slave System.get_env("SLAVE", "default")
-	@replica System.get_env("REPLICA", "default")
+	@slave_name System.get_env("SLAVE_NAME", "default")
+	@delay 1000
 
 	def connect() do
 		opts = [:binary, :inet, active: false, packet: :line]
@@ -15,8 +15,10 @@ defmodule Cache.Connection do
 
 		#IEx.pry
 
-		{:ok, iodata} = Poison.encode(%{slave: @slave, replica: @replica })
-		:ok = :gen_tcp.send(master_socket, iodata <> "\n")
+		:timer.sleep(@delay)
+
+		# "\n" is a MUST, it won't work without it, it won't be received
+		:ok = :gen_tcp.send(master_socket, @slave_name <> "\n")
 		Logger.info("Registered in master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
