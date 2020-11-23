@@ -1,7 +1,6 @@
 defmodule Cache.SlaveListener do
 	use Task, restart: :permanent
 	require Logger
-	alias Cache.Storage
 	alias Cache.SlaveRegistry
 
 	@port_for_slave Application.get_env(:cache_master, :port_for_slave, 6667)
@@ -33,7 +32,7 @@ defmodule Cache.SlaveListener do
 
 	defp register_slave(slave) do
 		{:ok, slave_name} = :gen_tcp.recv(slave, @recv_length)
-		IO.inspect(slave_name)
+		slave_name = String.replace(slave_name, "\n", "")
 		SlaveRegistry.add_slave(slave_name, slave)
 		Logger.info("Slave #{Kernel.inspect(slave)} added")
 		IO.inspect(SlaveRegistry.get_registry())

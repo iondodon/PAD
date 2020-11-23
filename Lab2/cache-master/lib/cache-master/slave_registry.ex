@@ -1,5 +1,6 @@
 defmodule Cache.SlaveRegistry do
 	use Agent
+
 	require Logger
 	@tag_slaves "slaves"
 	@tag_replicas "replicas#"

@@ -5,7 +5,6 @@ defmodule Cache.Connection do
 	@master_ip Application.get_env(:cache_slave, :master_ip, 'cache-master')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
 
-	@slave_name System.get_env("SLAVE_NAME", "default")
 	@delay 1000
 
 	def connect() do
@@ -18,7 +17,7 @@ defmodule Cache.Connection do
 		:timer.sleep(@delay)
 
 		# "\n" is a MUST, it won't work without it, it won't be received
-		:ok = :gen_tcp.send(master_socket, @slave_name <> "\n")
+		:ok = :gen_tcp.send(master_socket, System.get_env("SLAVE_NAME", "default") <> "\n")
 		Logger.info("Registered in master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
