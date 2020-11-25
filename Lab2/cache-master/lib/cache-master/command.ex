@@ -104,10 +104,11 @@ defmodule Cache.Command do
 
         command_hash = key1
         rpop_result = run_on_slave("RPOP #{key1} \n", command_hash)
-        IO.inspect("RPOP result: #{rpop_result}")
+        poped = Utils.parse_slave_response(rpop_result)
+        IO.inspect("RPOP result: #{poped}")
 
         command_hash = key2
-        lpush_result = run_on_slave("LPUSH #{key2} \n", command_hash)
+        lpush_result = run_on_slave("LPUSH #{key2} #{poped} \n", command_hash)
         IO.inspect("LPUSH result: #{lpush_result}")
 
         rpop_result

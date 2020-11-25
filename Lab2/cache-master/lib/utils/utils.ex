@@ -1,28 +1,47 @@
 defmodule Utils do
+    def parse_slave_response(response) do
+        response = String.trim(response, " \r\n")
+        case response do
+            "(float) " <> value -> elem(Float.parse(value), 0)
+            "(integer) " <> value -> elem(Integer.parse(value), 0)
+            "(boolean) " <> value -> value
+            "(atom) " <> value -> String.to_atom(value)
+            "(binary) " <> value -> value
+            "(function) " <> value -> value
+            "(list) " <> values ->
+                values = String.split(values)
+                Enum.reduce(values, [], fn value, list ->
+                    list ++ [value]
+                end)
+            "(tuple) " <> tuple -> tuple
+            "(idunno) " <> _rest -> "idunno"
+        end
+    end
+
     def type_and_value(value) do
         value = internal_type(value)
 
         cond do
-            is_float(value)    -> 
+            is_float(value)    ->
                 "(float) #{value}"
-            is_integer(value)  -> 
+            is_integer(value)  ->
                 "(integer) #{value}"
-            is_boolean(value)  -> 
+            is_boolean(value)  ->
                 "(boolean) #{value}"
-            is_atom(value)     -> 
+            is_atom(value)     ->
                 "(atom) #{value}"
-            is_binary(value)   -> 
+            is_binary(value)   ->
                 "(binary) #{value}"
-            is_function(value) -> 
+            is_function(value) ->
                 "(function) #{value}"
-            is_list(value)     -> 
+            is_list(value)     ->
                 value_str = Enum.reduce(value, "", fn item, str -> str <> " " <> item end)
                 "(list) #{value_str}"
-            is_tuple(value)    -> 
+            is_tuple(value)    ->
                 "(tuple) #{value}"
-            true              -> 
+            true              ->
                 "(idunno) #{value}"
-        end    
+        end
     end
 
     def internal_type(value) do
