@@ -17,6 +17,7 @@ defmodule Cache.Command do
             ["DEL" | keys] -> {:ok, {:del, keys}}
             ["INCR", key] -> {:ok, {:incr, key}}
             ["LPUSH", key | values] -> {:ok, {:lpush, key, values}}
+            ["RPOP", key] -> {:ok, {:rpop, key}}
             ["LLEN", key] -> {:ok, {:llen, key}}
             ["LREM", key, value] -> {:ok, {:lrem, key, value}}
             ["RPOPLPUSH", key1, key2] -> {:ok, {:rpoplpush, key1, key2}}
@@ -39,9 +40,11 @@ defmodule Cache.Command do
         Storage.setnx(key, value)
     end
 
-    def run(_io_command, {:get, key}) do
+    #on slave
+    def run(io_command, {:get, key}) do
         Logger.info("GET #{key}")
-        Storage.get(key)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
     def run(_io_command, {:mget, keys}) do
@@ -71,9 +74,18 @@ defmodule Cache.Command do
         Storage.increment(key)
     end
 
+    # on slave
     def run(io_command, {:lpush, key, values}) do
         Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
-        run_on_slave(io_command)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
+    end
+
+    # on slave
+    def run(io_command, {:rpop, key}) do
+        Logger.info("RPOP #{key}")
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
     def run(_io_command, {:llen, key}) do
@@ -86,9 +98,19 @@ defmodule Cache.Command do
         Storage.lrem(key, value)
     end
 
+    # on slaves
     def run(_io_command, {:rpoplpush, key1, key2}) do
         Logger.info("RPOPLPUSH #{key1} #{key2}")
-        Storage.rpoplpush(key1, key2)
+
+        command_hash = key1
+        rpop_result = run_on_slave("RPOP #{key1} \n", command_hash)
+        IO.inspect("RPOP result: #{rpop_result}")
+
+        command_hash = key2
+        lpush_result = run_on_slave("LPUSH #{key2} \n", command_hash)
+        IO.inspect("LPUSH result: #{lpush_result}")
+
+        rpop_result
     end
 
     def run(_io_command, {:ttl, key}) do
@@ -107,7 +129,8 @@ defmodule Cache.Command do
         Extra.set_key_ttl("ttl#" <> key, ttl)
     end
 
-    defp run_on_slave(io_command) do
+    defp run_on_slave(io_command, command_hash) do
+        IO.inspect(command_hash)
         registry = SlaveRegistry.get_registry()
 
         [first_slave_name | _tail] = Map.get(registry, "slaves", [])
