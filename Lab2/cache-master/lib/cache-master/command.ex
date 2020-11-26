@@ -154,7 +154,9 @@ defmodule Cache.Command do
     end
 
     defp hash_key(key) do
-        :crypto.hash(:sha256, key) |> Base.encode16
+        key_hash = :crypto.hash(:sha256, key) |> Base.encode16
+        Logger.info("Key hash: #{key_hash}")
+        key_hash
     end
 
     defp run_on_slave(io_command, key_hash) do
@@ -183,6 +185,7 @@ defmodule Cache.Command do
     defp find_slave_to_use(slaves, key_hash) when is_list(slaves) do
         for {slave_name, slave_hash} <- slaves do
             if slave_hash >= key_hash do
+                Logger.info("Slave hash: #{slave_hash}")
                 slave_name
             end
         end
