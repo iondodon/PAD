@@ -1,8 +1,6 @@
 defmodule Cache.Command do
     require Logger
     alias Cache.SlaveRegistry
-    alias Cache.Storage.Extra
-    alias Cache.Storage
 
     @recv_length 0
     @tag_replicas "replicas#"
@@ -30,14 +28,18 @@ defmodule Cache.Command do
     # Command execution on slave
     def run(io_command, command)
 
-    def run(_io_command, {:set, key, value}) do
+
+    def run(io_command, {:set, key, value}) do
         Logger.info("SET #{key} to #{value}")
-        Storage.set(key, value)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    def run(_io_command, {:setnx, key, value}) do
+
+    def run(io_command, {:setnx, key, value}) do
         Logger.info("SET  #{key} to #{value}, if not exists")
-        Storage.setnx(key, value)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
     #on slave
@@ -47,58 +49,82 @@ defmodule Cache.Command do
         run_on_slave(io_command, command_hash)
     end
 
+
     def run(_io_command, {:mget, keys}) do
         keys_str = Enum.reduce(keys, "", fn key, keys_str -> keys_str <> key <> " " end)
         Logger.info("MGET #{keys_str}")
-        values = Storage.mget(keys)
+
+        values = Enum.reduce(keys, [], fn key, list ->
+            command_hash = key
+            response = run_on_slave("GET #{key} \n", command_hash)
+            value = Utils.parse_slave_response(response)
+            list ++ [value]
+        end)
+
         IO.inspect(values)
-        Enum.reduce(values, "", fn value, str -> str <> value <> " " end)
+        Enum.reduce(values, "", fn value, str ->
+            str <> Kernel.inspect(value) <> " "
+        end)
     end
 
-    @doc """
-    Deletes multiple keys
-    """
+
+    # Deletes multiple keys
     def run(_io_command, {:del, keys}) when is_list(keys) do
         keys_str = Enum.reduce(keys, "", fn key, keys_str -> keys_str <> key <> " " end)
         Logger.info("DELETE #{keys_str}")
-        Storage.delete_keys(keys)
+
+        Enum.each(keys, fn key ->
+            command_hash = key
+            response = run_on_slave("DEL #{key} \n", command_hash)
+            Logger.info("Response from slave: #{response}")
+        end)
+
+        "deleted"
     end
 
-    def run(_io_command, {:del, key}) do
+
+    def run(io_command, {:del, key}) do
         Logger.info("DELETE #{key}")
-        Storage.delete_key(key)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    def run(_io_command, {:incr, key}) do
+
+    def run(io_command, {:incr, key}) do
         Logger.info("INCR #{key}")
-        Storage.increment(key)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    # on slave
+
     def run(io_command, {:lpush, key, values}) do
         Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
         command_hash = key
         run_on_slave(io_command, command_hash)
     end
 
-    # on slave
+
     def run(io_command, {:rpop, key}) do
         Logger.info("RPOP #{key}")
         command_hash = key
         run_on_slave(io_command, command_hash)
     end
 
-    def run(_io_command, {:llen, key}) do
+
+    def run(io_command, {:llen, key}) do
         Logger.info("LLEN #{key}")
-        Storage.llen(key)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    def run(_io_command, {:lrem, key, value}) do
+
+    def run(io_command, {:lrem, key, value}) do
         Logger.info("LREM  #{value} in #{key}")
-        Storage.lrem(key, value)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    # on slaves
+
     def run(_io_command, {:rpoplpush, key1, key2}) do
         Logger.info("RPOPLPUSH #{key1} #{key2}")
 
@@ -114,24 +140,20 @@ defmodule Cache.Command do
         rpop_result
     end
 
-    def run(_io_command, {:ttl, key}) do
-        ttl = Extra.get_ttl("ttl#" <> key)
-        if ttl != :nil do
-            ttl - System.os_time(:second)
-        else
-            ttl
-        end
+
+    def run(io_command, {:ttl, key}) do
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    def run(_io_command, {:expire, key, sec}) do
+
+    def run(io_command, {:expire, key, sec}) do
         Logger.info("EXPIRE #{key} in #{sec} seconds")
-        {sec, _} = Integer.parse(sec)
-        ttl = System.os_time(:second) + sec
-        Extra.set_key_ttl("ttl#" <> key, ttl)
+        command_hash = key
+        run_on_slave(io_command, command_hash)
     end
 
-    defp run_on_slave(io_command, command_hash) do
-        IO.inspect(command_hash)
+    defp run_on_slave(io_command, _command_hash) do
         registry = SlaveRegistry.get_registry()
 
         [first_slave_name | _tail] = Map.get(registry, "slaves", [])
