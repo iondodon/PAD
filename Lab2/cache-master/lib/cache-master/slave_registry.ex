@@ -11,8 +11,13 @@ defmodule Cache.SlaveRegistry do
 
 	def add_slave(slave_name, slave_socket) do
 		Agent.update(__MODULE__, fn registry ->
+			slave_hash = :crypto.hash(:sha256, slave_name) |> Base.encode16
+
 			slaves = Map.get(registry, @tag_slaves, [])
-			slaves = slaves ++ [slave_name]
+			slaves = slaves ++ [{slave_name, slave_hash}]
+
+			# slaves should be sorted by their hash
+			slaves = Enum.sort(slaves, fn {_, hash1}, {_, hash2} -> hash1 >= hash2 end)
 
 			registry = Map.put(registry, @tag_slaves, slaves)
 

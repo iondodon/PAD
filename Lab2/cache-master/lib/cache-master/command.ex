@@ -31,22 +31,22 @@ defmodule Cache.Command do
 
     def run(io_command, {:set, key, value}) do
         Logger.info("SET #{key} to #{value}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:setnx, key, value}) do
         Logger.info("SET  #{key} to #{value}, if not exists")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
     #on slave
     def run(io_command, {:get, key}) do
         Logger.info("GET #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
@@ -55,8 +55,8 @@ defmodule Cache.Command do
         Logger.info("MGET #{keys_str}")
 
         values = Enum.reduce(keys, [], fn key, list ->
-            command_hash = key
-            response = run_on_slave("GET #{key} \n", command_hash)
+            key_hash = hash_key(key)
+            response = run_on_slave("GET #{key} \n", key_hash)
             value = Utils.parse_slave_response(response)
             list ++ [value]
         end)
@@ -74,8 +74,8 @@ defmodule Cache.Command do
         Logger.info("DELETE #{keys_str}")
 
         Enum.each(keys, fn key ->
-            command_hash = key
-            response = run_on_slave("DEL #{key} \n", command_hash)
+            key_hash = hash_key(key)
+            response = run_on_slave("DEL #{key} \n", key_hash)
             Logger.info("Response from slave: #{response}")
         end)
 
@@ -85,56 +85,56 @@ defmodule Cache.Command do
 
     def run(io_command, {:del, key}) do
         Logger.info("DELETE #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:incr, key}) do
         Logger.info("INCR #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:lpush, key, values}) do
         Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:rpop, key}) do
         Logger.info("RPOP #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:llen, key}) do
         Logger.info("LLEN #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:lrem, key, value}) do
         Logger.info("LREM  #{value} in #{key}")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(_io_command, {:rpoplpush, key1, key2}) do
         Logger.info("RPOPLPUSH #{key1} #{key2}")
 
-        command_hash = key1
-        rpop_result = run_on_slave("RPOP #{key1} \n", command_hash)
+        key_hash = hash_key(key1)
+        rpop_result = run_on_slave("RPOP #{key1} \n", key_hash)
         poped = Utils.parse_slave_response(rpop_result)
         IO.inspect("RPOP result: #{poped}")
 
-        command_hash = key2
-        lpush_result = run_on_slave("LPUSH #{key2} #{poped} \n", command_hash)
+        key_hash = hash_key(key2)
+        lpush_result = run_on_slave("LPUSH #{key2} #{poped} \n", key_hash)
         IO.inspect("LPUSH result: #{lpush_result}")
 
         rpop_result
@@ -142,22 +142,33 @@ defmodule Cache.Command do
 
 
     def run(io_command, {:ttl, key}) do
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
 
     def run(io_command, {:expire, key, sec}) do
         Logger.info("EXPIRE #{key} in #{sec} seconds")
-        command_hash = key
-        run_on_slave(io_command, command_hash)
+        key_hash = hash_key(key)
+        run_on_slave(io_command, key_hash)
     end
 
-    defp run_on_slave(io_command, _command_hash) do
-        registry = SlaveRegistry.get_registry()
+    defp hash_key(key) do
+        :crypto.hash(:sha256, key) |> Base.encode16
+    end
 
-        [first_slave_name | _tail] = Map.get(registry, "slaves", [])
-        [first_replica_socket | _tail] = Map.get(registry, @tag_replicas <> first_slave_name)
+    defp run_on_slave(io_command, key_hash) do
+        registry = SlaveRegistry.get_registry()
+        slaves = Map.get(registry, "slaves", [])
+
+        if Enum.empty?(slaves) do
+            "error: no slave to run on"
+        end
+
+        # Distributed Hashing - circle
+        slave_name = find_slave_to_use(slaves, key_hash)
+
+        [first_replica_socket | _tail] = Map.get(registry, @tag_replicas <> slave_name)
 
 
         Logger.info("EXECUTE #{io_command} on slave #{Kernel.inspect(first_replica_socket)}")
@@ -166,5 +177,17 @@ defmodule Cache.Command do
         {:ok, response_from_slave} = :gen_tcp.recv(first_replica_socket, @recv_length)
         Logger.info("Response from slave: #{response_from_slave}")
         response_from_slave
+    end
+
+    # Distributed Hashing - circle - find slave candidate
+    defp find_slave_to_use(slaves, key_hash) when is_list(slaves) do
+        for {slave_name, slave_hash} <- slaves do
+            if slave_hash >= key_hash do
+                slave_name
+            end
+        end
+
+        [{first_slave_name, _} | _rest_slaves] = slaves
+        first_slave_name
     end
 end
