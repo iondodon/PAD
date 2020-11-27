@@ -1,4 +1,19 @@
 defmodule Utils do
+    def  polynomial_rolling_hash(string) do
+        p = 31
+        m = 10000000
+
+        string = String.to_charlist(string)
+
+        {hash_value, _p_pow} = Enum.reduce(string, {0, 1}, fn c, {hash_value, p_pow} ->
+            hash_value = rem(hash_value + (c - hd('a') + 1) * p_pow, m)
+            p_pow = rem(p_pow * p, m)
+            {hash_value, p_pow}
+        end)
+
+        hash_value
+    end
+
     def parse_slave_response(response) do
         response = String.trim(response, " \r\n")
         case response do

@@ -11,7 +11,7 @@ defmodule Cache.SlaveRegistry do
 
 	def add_slave(slave_name, slave_socket) do
 		Agent.update(__MODULE__, fn registry ->
-			slave_hash = :crypto.hash(:sha256, slave_name) |> Base.encode16
+			slave_hash = Utils.polynomial_rolling_hash(slave_name)
 
 			slaves = Map.get(registry, @tag_slaves, [])
 			slaves = slaves ++ [{slave_name, slave_hash}]

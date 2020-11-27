@@ -154,7 +154,7 @@ defmodule Cache.Command do
     end
 
     defp hash_key(key) do
-        key_hash = :crypto.hash(:sha256, key) |> Base.encode16
+        key_hash = Utils.polynomial_rolling_hash(key)
         Logger.info("Key hash: #{key_hash}")
         key_hash
     end
