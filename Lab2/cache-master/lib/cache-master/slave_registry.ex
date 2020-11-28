@@ -14,12 +14,15 @@ defmodule Cache.SlaveRegistry do
 			slave_hash = Utils.polynomial_rolling_hash(slave_name)
 
 			slaves = Map.get(registry, @tag_slaves, [])
-			slaves = slaves ++ [{slave_name, slave_hash}]
 
-			# slaves should be sorted by their hash
-			slaves = Enum.sort(slaves, fn {_, hash1}, {_, hash2} -> hash1 < hash2 end)
-
-			registry = Map.put(registry, @tag_slaves, slaves)
+			registry = if not Enum.any?(slaves, fn {name, _hash} -> name == slave_name end) do
+				slaves = slaves ++ [{slave_name, slave_hash}]
+				# slaves should be sorted by their hash
+				slaves = Enum.sort(slaves, fn {_, hash1}, {_, hash2} -> hash1 < hash2 end)
+				Map.put(registry, @tag_slaves, slaves)
+			else
+				registry
+			end
 
 			replicas = Map.get(registry, @tag_replicas <> slave_name, [])
 			replicas = replicas ++ [slave_socket]

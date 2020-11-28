@@ -35,7 +35,7 @@ defmodule Cache.SlaveListener do
 		slave_registry = SlaveRegistry.get_registry()
 		replicas = Map.get(slave_registry, "replicas#" <> slave_name, [])
 		case List.first(replicas) do
-			:nil -> {:ok, "%{}\n"}
+			:nil -> {:ok, "(map) {}\n"}
 			first_replica ->
 				:ok = :gen_tcp.send(first_replica, "GETSTATE\n")
 				:gen_tcp.recv(first_replica, @recv_length)
@@ -48,7 +48,7 @@ defmodule Cache.SlaveListener do
 
 		# send replica state
 		:timer.sleep(@delay)
-		IO.inspect("Sending initial state to the new slave")
+		IO.inspect("Sending initial state to the new replica")
 		{:ok, io_state} = get_replica_state(slave_name)
 		:ok = :gen_tcp.send(slave, io_state)
 

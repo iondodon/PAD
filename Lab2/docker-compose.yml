@@ -21,6 +21,17 @@ services:
         environment:
             - SLAVE_NAME=slave1
 
+    cache-slave1-replica2:
+        build: ./cache-slave
+        container_name: pbl-cache-slave1-replica2
+        tty: true
+        volumes: 
+            - ./cache-slave:/cache-slave
+        restart: always
+        depends_on: [cache-master]
+        environment:
+            - SLAVE_NAME=slave1
+
     cache-slave2-replica1:
         build: ./cache-slave
         container_name: pbl-cache-slave2-replica1

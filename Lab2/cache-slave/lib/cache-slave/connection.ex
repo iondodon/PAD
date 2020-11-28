@@ -1,4 +1,5 @@
 defmodule Cache.Connection do
+	alias Cache.Storage
 	require Logger
 	require IEx
 
@@ -22,9 +23,13 @@ defmodule Cache.Connection do
 
 		{:ok, io_data} = :gen_tcp.recv(master_socket, @recv_length)
 		io_data = String.replace(io_data, "\n", "")
-		IO.inspect("Received state #{io_data}")
+		"(map) " <> state = io_data
+		{:ok, state} = Poison.decode(state)
+		Logger.info("Received initial state from siblings")
+		Storage.update_storage(state)
+		IO.inspect(state)
 
-		Logger.info("Registered in master")
+		Logger.info("Successfully registered to master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
 			CommandListener.Supervisor,

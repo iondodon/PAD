@@ -148,7 +148,7 @@ defmodule Cache.Storage do
         end
     end
 
-    defp update_storage(new_storage) do
+    def update_storage(new_storage) do
         Agent.update(__MODULE__, fn _storage -> new_storage end)
     end
 
