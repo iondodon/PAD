@@ -19,6 +19,7 @@ defmodule Cache.Command do
             ["RPOPLPUSH", key1, key2] -> {:ok, {:rpoplpush, key1, key2}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
+            ["GETSTATE"] -> {:ok, :get_state}
             _ -> {:error, :unknown_command}
           end
     end
@@ -108,5 +109,10 @@ defmodule Cache.Command do
         {sec, _} = Integer.parse(sec)
         ttl = System.os_time(:second) + sec
         Extra.set_key_ttl("ttl#" <> key, ttl)
+    end
+
+    def run(:get_state) do
+        Logger.info("GETSTATE")
+        Storage.get_storage()
     end
 end

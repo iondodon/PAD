@@ -153,11 +153,13 @@ defmodule Cache.Command do
         run_on_slave(io_command, key_hash)
     end
 
+
     defp hash_key(key) do
         key_hash = Utils.polynomial_rolling_hash(key)
         Logger.info("Key hash: #{key_hash}")
         key_hash
     end
+
 
     defp run_on_slave(io_command, key_hash) do
         registry = SlaveRegistry.get_registry()
@@ -180,6 +182,7 @@ defmodule Cache.Command do
         Logger.info("Response from slave: #{response_from_slave}")
         response_from_slave
     end
+
 
     # Distributed Hashing - circle - find slave candidate
     defp find_slave_to_use(slaves, key_hash) when is_list(slaves) do
