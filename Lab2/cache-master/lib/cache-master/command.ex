@@ -168,12 +168,12 @@ defmodule Cache.Command do
         end
 
         # Distributed Hashing - circle
-        slave_name = find_slave_to_use(slaves, key_hash)
+        {slave_name, slave_hash} = find_slave_to_use(slaves, key_hash)
 
         [first_replica_socket | _tail] = Map.get(registry, @tag_replicas <> slave_name)
 
 
-        Logger.info("EXECUTE #{io_command} on slave #{Kernel.inspect(first_replica_socket)}")
+        Logger.info("EXECUTE #{io_command} on slave #{slave_name} with hash #{slave_hash}")
         :ok = :gen_tcp.send(first_replica_socket, io_command)
 
         {:ok, response_from_slave} = :gen_tcp.recv(first_replica_socket, @recv_length)
@@ -183,14 +183,10 @@ defmodule Cache.Command do
 
     # Distributed Hashing - circle - find slave candidate
     defp find_slave_to_use(slaves, key_hash) when is_list(slaves) do
-        for {slave_name, slave_hash} <- slaves do
+        Enum.find(slaves, List.first(slaves), fn {slave_name, slave_hash} ->
             if slave_hash >= key_hash do
-                Logger.info("Slave hash: #{slave_hash}")
-                slave_name
+                {slave_name, slave_hash}
             end
-        end
-
-        [{first_slave_name, _} | _rest_slaves] = slaves
-        first_slave_name
+        end)
     end
 end

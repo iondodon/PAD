@@ -17,7 +17,7 @@ defmodule Cache.SlaveRegistry do
 			slaves = slaves ++ [{slave_name, slave_hash}]
 
 			# slaves should be sorted by their hash
-			slaves = Enum.sort(slaves, fn {_, hash1}, {_, hash2} -> hash1 >= hash2 end)
+			slaves = Enum.sort(slaves, fn {_, hash1}, {_, hash2} -> hash1 < hash2 end)
 
 			registry = Map.put(registry, @tag_slaves, slaves)
 

@@ -11,7 +11,7 @@ defmodule Utils do
             {hash_value, p_pow}
         end)
 
-        hash_value
+        abs(hash_value)
     end
 
     def parse_slave_response(response) do
