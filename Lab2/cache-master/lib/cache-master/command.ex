@@ -172,15 +172,26 @@ defmodule Cache.Command do
         # Distributed Hashing - circle
         {slave_name, slave_hash} = find_slave_to_use(slaves, key_hash)
 
-        [first_replica_socket | _tail] = Map.get(registry, @tag_replicas <> slave_name)
+        [first_replica_socket | rest_replicas] = Map.get(registry, @tag_replicas <> slave_name)
 
 
         Logger.info("EXECUTE #{io_command} on slave #{slave_name} with hash #{slave_hash}")
         :ok = :gen_tcp.send(first_replica_socket, io_command)
 
+        # update the rest of the replicas
+        Task.async(fn -> update_replicas(io_command, rest_replicas) end)
+
         {:ok, response_from_slave} = :gen_tcp.recv(first_replica_socket, @recv_length)
         Logger.info("Response from slave: #{response_from_slave}")
         response_from_slave
+    end
+
+
+    defp update_replicas(io_command, replicas) do
+        Enum.each(replicas, fn replica_slave_socket ->
+            :gen_tcp.send(replica_slave_socket, io_command)
+            _response = :gen_tcp.recv(replica_slave_socket, @recv_length)
+        end)
     end
 
 
