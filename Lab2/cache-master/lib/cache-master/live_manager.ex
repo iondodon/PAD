@@ -8,7 +8,7 @@ defmodule Cache.LiveManager do
     def start_link(_args) do
       Task.start_link(__MODULE__, :run, [])
     end
-  
+
     def run() do
         loop_manage_cache()
     end
@@ -21,7 +21,7 @@ defmodule Cache.LiveManager do
 
     defp clean_expired_keys() do
         ttls = Extra.get_ttls()
-        Enum.each(Map.keys(ttls), fn ttlkey -> 
+        Enum.each(Map.keys(ttls), fn ttlkey ->
             if System.os_time(:second) >= ttls[ttlkey] do
                 "ttl#" <> key = ttlkey
                 Storage.delete_key(key)

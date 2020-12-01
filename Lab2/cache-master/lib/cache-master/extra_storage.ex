@@ -8,7 +8,7 @@ defmodule Cache.Storage.Extra do
 
     def set_key_ttl(key, ttl) do
         ttls = get_ttls()
-        Agent.update(__MODULE__, fn extra_storage -> 
+        Agent.update(__MODULE__, fn extra_storage ->
             Map.put(extra_storage, "ttls", Map.put(ttls, key, ttl))
         end)
     end
@@ -18,7 +18,7 @@ defmodule Cache.Storage.Extra do
     end
 
     def get_ttl(ttlkey) do
-        Agent.get(__MODULE__, fn extra_storage -> 
+        Agent.get(__MODULE__, fn extra_storage ->
             extra_storage["ttls"][ttlkey]
         end)
     end
