@@ -127,11 +127,11 @@ defmodule Cache.Storage do
         end
     end
 
-    defp update_storage(new_storage) do
+    def update_storage(new_storage) do
         Agent.update(__MODULE__, fn _storage -> new_storage end)
     end
 
-    defp get_storage() do
+    def get_storage() do
         Agent.get(__MODULE__, fn storage -> storage end)
     end
 end
