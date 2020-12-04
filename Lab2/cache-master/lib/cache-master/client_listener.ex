@@ -25,7 +25,7 @@ defmodule Cache.ClientListener do
 
 		{:ok, pid} = Task.Supervisor.start_child(
 			CommandListener.Supervisor,
-			fn -> Cache.CommandListener.serve(client) end,
+			fn -> Cache.ClientCommandListener.serve(client) end,
 			[restart: :permanent]
 		)
 

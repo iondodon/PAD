@@ -1,4 +1,4 @@
-defmodule Cache.SlaveListener do
+defmodule Cache.NewSlaveListener do
 	use Task, restart: :permanent
 	require Logger
 	alias Cache.SlaveRegistry

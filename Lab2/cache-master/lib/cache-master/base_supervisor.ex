@@ -1,23 +1,30 @@
 defmodule Cache.BaseSupervisor do
     use Supervisor
 
-    def start_link do
-        Supervisor.start_link(__MODULE__, [], name: CacheSupervisor)
+    def init(children) do
+        Supervisor.init(children, strategy: :one_for_one)
     end
 
-    def init(_) do
-
-
-        children = [
+    def run_as_master() do
+        Supervisor.start_link(__MODULE__, [
             {Cache.Storage.Extra, %{}},
             {Cache.Storage, %{}},
             {Cache.SlaveRegistry, %{}},
-            {Task.Supervisor, name: CommandListener.Supervisor},
+            {Task.Supervisor, name: ClientCommandListener.Supervisor},
             {Cache.ClientListener, []},
-            {Cache.SlaveListener, []},
+            {Cache.NewSlaveListener, []},
             {Cache.LiveManager, []}
-        ]
+        ], name: Cache.BaseSupervisor)
+    end
 
-        Supervisor.init(children, strategy: :one_for_one)
+    def run_as_slave() do
+        Supervisor.start_link(__MODULE__, [
+            {Cache.Storage.Extra, %{}},
+            {Cache.Storage, %{}},
+            {Cache.SlaveRegistry, %{}},
+            {Task.Supervisor, name: MasterCommandListener.Supervisor},
+            Cache.ConnectionToMaster,
+            {Cache.LiveManager, []}
+        ], name: Cache.BaseSupervisor)
     end
 end

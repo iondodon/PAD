@@ -1,9 +1,7 @@
 defmodule Cache.Command do
     require Logger
-    alias Cache.SlaveRegistry
-
-    @recv_length 0
-    @tag_replicas "replicas#"
+    alias Cache.Storage
+    alias Cache.Storage.Extra
 
     def parse(line) do
         case String.split(line) do
@@ -21,186 +19,100 @@ defmodule Cache.Command do
             ["RPOPLPUSH", key1, key2] -> {:ok, {:rpoplpush, key1, key2}}
             ["EXPIRE", key, sec] -> {:ok, {:expire, key, sec}}
             ["TTL", key] -> {:ok, {:ttl, key}}
+            ["GETSTATE"] -> {:ok, :get_state}
             _ -> {:error, :unknown_command}
           end
     end
 
-    # Command execution on slave
-    def run(io_command, command)
+    # Command execution
 
+    def run(command)
 
-    def run(io_command, {:set, key, value}) do
+    def run({:set, key, value}) do
         Logger.info("SET #{key} to #{value}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.set(key, value)
     end
 
-
-    def run(io_command, {:setnx, key, value}) do
+    def run({:setnx, key, value}) do
         Logger.info("SET  #{key} to #{value}, if not exists")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.setnx(key, value)
     end
 
-    #on slave
-    def run(io_command, {:get, key}) do
+    def run({:get, key}) do
         Logger.info("GET #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.get(key)
     end
 
-
-    def run(_io_command, {:mget, keys}) do
+    def run({:mget, keys}) do
         keys_str = Enum.reduce(keys, "", fn key, keys_str -> keys_str <> key <> " " end)
         Logger.info("MGET #{keys_str}")
-
-        values = Enum.reduce(keys, [], fn key, list ->
-            key_hash = hash_key(key)
-            response = run_on_slave("GET #{key} \n", key_hash)
-            value = Utils.parse_slave_response(response)
-            list ++ [value]
-        end)
-
+        values = Storage.mget(keys)
         IO.inspect(values)
-        Enum.reduce(values, "", fn value, str ->
-            str <> Kernel.inspect(value) <> " "
-        end)
+        Enum.reduce(values, "", fn value, str -> str <> value <> " " end)
     end
 
-
-    # Deletes multiple keys
-    def run(_io_command, {:del, keys}) when is_list(keys) do
+    @doc """
+    Deletes multiple keys
+    """
+    def run({:del, keys}) when is_list(keys) do
         keys_str = Enum.reduce(keys, "", fn key, keys_str -> keys_str <> key <> " " end)
         Logger.info("DELETE #{keys_str}")
-
-        Enum.each(keys, fn key ->
-            key_hash = hash_key(key)
-            response = run_on_slave("DEL #{key} \n", key_hash)
-            Logger.info("Response from slave: #{response}")
-        end)
-
-        "deleted"
+        Storage.delete_keys(keys)
     end
 
-
-    def run(io_command, {:del, key}) do
+    def run({:del, key}) do
         Logger.info("DELETE #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.delete_key(key)
     end
 
-
-    def run(io_command, {:incr, key}) do
+    def run({:incr, key}) do
         Logger.info("INCR #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.increment(key)
     end
 
-
-    def run(io_command, {:lpush, key, values}) do
+    def run({:lpush, key, values}) do
         Logger.info("LPUSH into #{key} values #{Kernel.inspect(values)}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.lpush(key, values)
     end
 
-
-    def run(io_command, {:rpop, key}) do
+    def run({:rpop, key}) do
         Logger.info("RPOP #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.rpop(key)
     end
 
-
-    def run(io_command, {:llen, key}) do
+    def run({:llen, key}) do
         Logger.info("LLEN #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.llen(key)
     end
 
-
-    def run(io_command, {:lrem, key, value}) do
+    def run({:lrem, key, value}) do
         Logger.info("LREM  #{value} in #{key}")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
+        Storage.lrem(key, value)
     end
 
-
-    def run(_io_command, {:rpoplpush, key1, key2}) do
+    def run({:rpoplpush, key1, key2}) do
         Logger.info("RPOPLPUSH #{key1} #{key2}")
-
-        key_hash = hash_key(key1)
-        rpop_result = run_on_slave("RPOP #{key1} \n", key_hash)
-        poped = Utils.parse_slave_response(rpop_result)
-        IO.inspect("RPOP result: #{poped}")
-
-        key_hash = hash_key(key2)
-        lpush_result = run_on_slave("LPUSH #{key2} #{poped} \n", key_hash)
-        IO.inspect("LPUSH result: #{lpush_result}")
-
-        rpop_result
+        Storage.rpoplpush(key1, key2)
     end
 
-
-    def run(io_command, {:ttl, key}) do
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
-    end
-
-
-    def run(io_command, {:expire, key, sec}) do
-        Logger.info("EXPIRE #{key} in #{sec} seconds")
-        key_hash = hash_key(key)
-        run_on_slave(io_command, key_hash)
-    end
-
-
-    defp hash_key(key) do
-        key_hash = Utils.polynomial_rolling_hash(key)
-        Logger.info("Key hash: #{key_hash}")
-        key_hash
-    end
-
-
-    defp run_on_slave(io_command, key_hash) do
-        registry = SlaveRegistry.get_registry()
-        slaves = Map.get(registry, "slaves", [])
-
-        if Enum.empty?(slaves) do
-            "error: no slave to run on"
+    def run({:ttl, key}) do
+        ttl = Extra.get_ttl("ttl#" <> key)
+        if ttl != :nil do
+            ttl - System.os_time(:second)
+        else
+            ttl
         end
-
-        # Distributed Hashing - circle
-        {slave_name, slave_hash} = find_slave_to_use(slaves, key_hash)
-
-        [first_replica_socket | rest_replicas] = Map.get(registry, @tag_replicas <> slave_name)
-
-
-        Logger.info("EXECUTE #{io_command} on slave #{slave_name} with hash #{slave_hash}")
-        :ok = :gen_tcp.send(first_replica_socket, io_command)
-
-        # update the rest of the replicas
-        Task.async(fn -> update_replicas(io_command, rest_replicas) end)
-
-        {:ok, response_from_slave} = :gen_tcp.recv(first_replica_socket, @recv_length)
-        Logger.info("Response from slave: #{response_from_slave}")
-        response_from_slave
     end
 
-
-    defp update_replicas(io_command, replicas) do
-        Enum.each(replicas, fn replica_slave_socket ->
-            :gen_tcp.send(replica_slave_socket, io_command)
-            _response = :gen_tcp.recv(replica_slave_socket, @recv_length)
-        end)
+    def run({:expire, key, sec}) do
+        Logger.info("EXPIRE #{key} in #{sec} seconds")
+        {sec, _} = Integer.parse(sec)
+        ttl = System.os_time(:second) + sec
+        Extra.set_key_ttl("ttl#" <> key, ttl)
     end
 
-
-    # Distributed Hashing - circle - find slave candidate
-    defp find_slave_to_use(slaves, key_hash) when is_list(slaves) do
-        Enum.find(slaves, List.first(slaves), fn {slave_name, slave_hash} ->
-            if slave_hash >= key_hash do
-                {slave_name, slave_hash}
-            end
-        end)
+    def run(:get_state) do
+        Logger.info("GETSTATE")
+        Storage.get_storage()
     end
 end

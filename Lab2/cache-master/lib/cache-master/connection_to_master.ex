@@ -1,5 +1,6 @@
-defmodule Cache.MasterConnection do
+defmodule Cache.ConnectionToMaster do
 	alias Cache.Storage
+
 	require Logger
 	require IEx
 
@@ -33,7 +34,7 @@ defmodule Cache.MasterConnection do
 
 		{:ok, _pid} = Task.Supervisor.start_child(
 			CommandListener.Supervisor,
-			fn -> Cache.CommandListener.serve(master_socket) end,
+			fn -> Cache.MasterCommandListener.serve(master_socket) end,
 			[restart: :permanent]
 		)
 	end

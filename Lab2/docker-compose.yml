@@ -13,6 +13,7 @@ services:
         ports:
             - 6666:6666
 
+    cache-slave1-replica2:
         build: ./cache-master
         container_name: pbl-cache-slave1-replica2
         tty: true
