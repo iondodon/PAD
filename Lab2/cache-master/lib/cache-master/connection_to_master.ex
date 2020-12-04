@@ -33,7 +33,7 @@ defmodule Cache.ConnectionToMaster do
 		Logger.info("Successfully registered to master")
 
 		{:ok, _pid} = Task.Supervisor.start_child(
-			CommandListener.Supervisor,
+			MasterCommandListener.Supervisor,
 			fn -> Cache.MasterCommandListener.serve(master_socket) end,
 			[restart: :permanent]
 		)

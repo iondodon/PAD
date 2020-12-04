@@ -170,6 +170,7 @@ defmodule Cache.ClientCommand do
         end
 
         # Distributed Hashing - circle
+        #todo: return nil, then causes no right hand match
         {slave_name, slave_hash} = find_slave_to_use(slaves, key_hash)
 
         [first_replica_socket | rest_replicas] = Map.get(registry, @tag_replicas <> slave_name)

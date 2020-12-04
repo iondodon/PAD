@@ -24,7 +24,7 @@ defmodule Cache.ClientListener do
 		Logger.info("New client connected #{Kernel.inspect client}")
 
 		{:ok, pid} = Task.Supervisor.start_child(
-			CommandListener.Supervisor,
+			ClientCommandListener.Supervisor,
 			fn -> Cache.ClientCommandListener.serve(client) end,
 			[restart: :permanent]
 		)
