@@ -23,10 +23,12 @@ defmodule Cache.LiveManager do
     # defp check_master_health() do
     #     master_host = Storage.get("master_host")
     #     opts = [:binary, :inet, active: false, packet: :line]
-        # case :gen_tcp.connect(master_host, 6666, opts) do
-        #     {:ok, _socket} -> IO.inspect()
-        #     {:error, _reason} -> IO.inspect()
-        # end
+    #     case :gen_tcp.connect(master_host, 6666, opts) do
+    #         {:ok, socket} ->
+    #             :gen_tcp.close(socket)
+    #         {:error, _reason} ->
+    #             Supervisor.restart_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
+    #     end
     # end
 
     defp clean_expired_keys() do

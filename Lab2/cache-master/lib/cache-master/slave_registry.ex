@@ -47,4 +47,11 @@ defmodule Cache.SlaveRegistry do
 			Map.put(registry, "slave_hosts", slave_hosts)
 		end)
 	end
+
+	def set_master_host(master_host) do
+		Logger.info("Set master host to #{master_host}")
+		Agent.update(__MODULE__, fn registry ->
+			Map.put(registry, "master_host", master_host)
+		end)
+	end
 end

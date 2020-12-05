@@ -13,6 +13,11 @@ defmodule Cache.MasterCommandListener do
         serve(master_socket)
     end
 
+    defp reconnect_to_master() do
+        Supervisor.terminate_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
+        Supervisor.restart_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
+    end
+
     defp read_from_master(master_socket) do
         :gen_tcp.recv(master_socket, @recv_length)
     end
@@ -23,15 +28,15 @@ defmodule Cache.MasterCommandListener do
     end
 
     defp send_to_master(_master_socket, {:error, :closed}) do
-        # The connection was closed, exit politely
-        exit(:shutdown)
+        # The connection was closed, restart connection task
+        Logger.error(:closed)
+        reconnect_to_master()
     end
 
-    defp send_to_master(master_socket, {:error, error}) do
+    defp send_to_master(_master_socket, {:error, error}) do
         # Unknown error; write to the client and exit
         Logger.error(error)
-        :gen_tcp.send(master_socket, "ERROR\r\n")
-        exit(error)
+        reconnect_to_master()
     end
 
     defp send_to_master(master_socket, result) do

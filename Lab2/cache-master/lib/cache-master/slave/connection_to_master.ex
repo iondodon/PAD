@@ -3,7 +3,6 @@ defmodule Cache.ConnectionToMaster do
 	alias Cache.SlaveRegistry
 
 	require Logger
-	require IEx
 
 	@master_host Application.get_env(:cache_slave, :master_host, 'cache-slave1-replica1')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
@@ -11,12 +10,50 @@ defmodule Cache.ConnectionToMaster do
 	@delay 1000
 	@recv_length 0
 
+	defp is_next_master? do
+		slave_registry = SlaveRegistry.get_registry()
+		slave_hosts = Map.get(slave_registry, "slave_hosts", :nil)
+		if slave_hosts == :nil or List.first(slave_hosts)	== :nil do
+			true
+		else
+			next_master_host = List.first(slave_hosts)
+			if next_master_host == System.get_env("HOST") do
+				true
+			else
+				false
+			end
+		end
+	end
+
+	defp restart_as_master() do
+		IO.inspect("Should be restarted as master")
+	end
+
+	defp get_master_host() do
+		slave_registry = Cache.SlaveRegistry.get_registry()
+		slave_hosts = Map.get(slave_registry, "slave_hosts", [])
+
+		master_host = if Enum.empty?(slave_hosts) do
+			'cache-slave1-replica1'
+		else
+			[master_host, _rest] = slave_hosts
+			String.to_charlist(master_host)
+		end
+
+		master_host
+	end
+
 	def connect() do
+		host = get_master_host()
+		IO.inspect(host)
+
 		opts = [:binary, :inet, active: false, packet: :line]
-		case :gen_tcp.connect(@master_host, @master_port, opts) do
+		case :gen_tcp.connect(host, @master_port, opts) do
 			{:ok, master_socket} ->
 				hand_shake(master_socket)
-			{:error, _reason} -> connect()
+			{:error, reason} ->
+				Logger.error(reason)
+				if is_next_master?() do restart_as_master() else connect() end
 		end
 	end
 
@@ -37,8 +74,7 @@ defmodule Cache.ConnectionToMaster do
 		{:ok, io_data_map} = Poison.decode(io_data)
 
 		master_host = io_data_map["master_host"]
-		Storage.set("master_host", master_host)
-		IO.inspect(Storage.get("master_host"))
+		SlaveRegistry.set_master_host(master_host)
 
 		slave_hosts = io_data_map["slave_hosts"]
 		SlaveRegistry.set_slave_hosts(slave_hosts)
