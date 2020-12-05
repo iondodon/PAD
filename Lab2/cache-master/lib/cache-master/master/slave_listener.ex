@@ -44,12 +44,15 @@ defmodule Cache.NewSlaveListener do
 	end
 
 	defp register_slave(slave) do
-		{:ok, slave_name} = :gen_tcp.recv(slave, @recv_length)
-		slave_name = String.replace(slave_name, "\n", "")
+		{:ok, io_data} = :gen_tcp.recv(slave, @recv_length)
+		io_data = String.replace(io_data, "\n", "")
+		{:ok, io_data_map} = Poison.decode(io_data)
+		slave_name = io_data_map["slave_name"]
+		slave_host = io_data_map["slave_host"]
 
-		# send replica state
+		# send replica state, host, and slaves registry
 		:timer.sleep(@delay)
-		IO.inspect("Sending initial state to the new replica")
+		IO.inspect("Sending initial state, host and slave registry to the new replica")
 		{:ok, io_state} = get_replica_state(slave_name)
 		{:ok, io_data} = Poison.encode(%{
 			"master_host" => @host,
@@ -58,7 +61,7 @@ defmodule Cache.NewSlaveListener do
 		})
 		:ok = :gen_tcp.send(slave, io_data <> "\n")
 
-		SlaveRegistry.add_slave(slave_name, slave)
+		SlaveRegistry.add_slave(slave_name, slave_host, slave)
 		Logger.info("Slave #{Kernel.inspect(slave)} added")
 		IO.inspect(SlaveRegistry.get_registry())
 	end

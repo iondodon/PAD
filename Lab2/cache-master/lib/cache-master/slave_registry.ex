@@ -9,7 +9,7 @@ defmodule Cache.SlaveRegistry do
 		Agent.start_link(fn -> initial_storage end, name: __MODULE__)
 	end
 
-	def add_slave(slave_name, slave_socket) do
+	def add_slave(slave_name, slave_host, slave_socket) do
 		Agent.update(__MODULE__, fn registry ->
 			slave_hash = Utils.polynomial_rolling_hash(slave_name)
 
@@ -25,7 +25,7 @@ defmodule Cache.SlaveRegistry do
 			end
 
 			replicas = Map.get(registry, @tag_replicas <> slave_name, [])
-			replicas = replicas ++ [slave_socket]
+			replicas = replicas ++ [{slave_host, slave_socket}]
 
 			registry = Map.put(registry, @tag_replicas <> slave_name, replicas)
 

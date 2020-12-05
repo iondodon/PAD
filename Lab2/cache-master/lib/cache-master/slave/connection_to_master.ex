@@ -26,7 +26,12 @@ defmodule Cache.ConnectionToMaster do
 		:ok = :timer.sleep(@delay)
 
 		# "\n" is a MUST, it won't work without it, it won't be received
-		:ok = :gen_tcp.send(master_socket, System.get_env("SLAVE_NAME") <> "\n")
+		io_data = %{
+			"slave_name" => System.get_env("SLAVE_NAME"),
+			"slave_host" => System.get_env("HOST")
+		}
+		{:ok, io_data} = Poison.encode(io_data)
+		:ok = :gen_tcp.send(master_socket, io_data <> "\n")
 
 		{:ok, io_data} = :gen_tcp.recv(master_socket, @recv_length)
 
