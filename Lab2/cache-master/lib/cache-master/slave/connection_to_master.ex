@@ -4,7 +4,7 @@ defmodule Cache.ConnectionToMaster do
 	require Logger
 	require IEx
 
-	@master_ip Application.get_env(:cache_slave, :master_ip, 'cache-master')
+	@master_host Application.get_env(:cache_slave, :master_host, 'cache-master')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
 
 	@delay 1000
@@ -12,12 +12,17 @@ defmodule Cache.ConnectionToMaster do
 
 	def connect() do
 		opts = [:binary, :inet, active: false, packet: :line]
-		{:ok, master_socket} = :gen_tcp.connect(@master_ip, @master_port, opts)
-		Logger.info("Connected to master")
+		case :gen_tcp.connect(@master_host, @master_port, opts) do
+			{:ok, master_socket} ->
+				hand_shake(master_socket)
+			{:error, _reason} -> connect()
+		end
+	end
 
+	defp hand_shake(master_socket) do
 		#IEx.pry
 
-		:timer.sleep(@delay)
+		:ok = :timer.sleep(@delay)
 
 		# "\n" is a MUST, it won't work without it, it won't be received
 		:ok = :gen_tcp.send(master_socket, System.get_env("SLAVE_NAME") <> "\n")

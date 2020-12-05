@@ -17,7 +17,7 @@ defmodule Cache.MixProject do
       extra_applications: [:logger, :crypto],
       mod: {CacheMaster, []},
       env: [
-        master_ip: 'cache-master',
+        master_host: 'cache-master',
         master_port: 6667,
         port_for_client: 6666,
         port_for_slave: 6667
