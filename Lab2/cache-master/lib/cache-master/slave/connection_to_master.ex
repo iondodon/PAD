@@ -1,10 +1,11 @@
 defmodule Cache.ConnectionToMaster do
 	alias Cache.Storage
+	alias Cache.SlaveRegistry
 
 	require Logger
 	require IEx
 
-	@master_host Application.get_env(:cache_slave, :master_host, 'cache-master')
+	@master_host Application.get_env(:cache_slave, :master_host, 'cache-slave1-replica1')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
 
 	@delay 1000
@@ -28,8 +29,21 @@ defmodule Cache.ConnectionToMaster do
 		:ok = :gen_tcp.send(master_socket, System.get_env("SLAVE_NAME") <> "\n")
 
 		{:ok, io_data} = :gen_tcp.recv(master_socket, @recv_length)
+
 		io_data = String.replace(io_data, "\n", "")
-		"(map) " <> state = io_data
+		{:ok, io_data_map} = Poison.decode(io_data)
+
+		master_host = io_data_map["master_host"]
+		Storage.set("master_host", master_host)
+		IO.inspect(Storage.get("master_host"))
+
+		slave_registry = io_data_map["slave_registry"]
+		SlaveRegistry.set_registry(slave_registry)
+
+		io_state = io_data_map["state"]
+		io_state = String.replace(io_state, "\n", "")
+
+		"(map) " <> state = io_state
 		{:ok, state} = Poison.decode(state)
 		Logger.info("Received initial state from siblings")
 		Storage.update_storage(state)

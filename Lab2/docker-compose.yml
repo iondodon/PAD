@@ -1,8 +1,8 @@
 version: '3.8'
 services:
-    cache-master:
+    cache-slave1-replica1:
         build: ./cache-master
-        container_name: cache-master
+        container_name: pbl-cache-slave1-replica1
         tty: true
         volumes: 
             - ./cache-master:/cache-master
@@ -37,7 +37,7 @@ services:
     #         - SLAVE_NAME=slave2
     #         - HOST=cache-slave2-replica1
     #     ports:
-    #         - 6666:6666
+    #         - 6666
 
     # gateway:
     #     build: ./gateway

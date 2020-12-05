@@ -14,10 +14,10 @@ defmodule Cache.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :crypto],
+      extra_applications: [:logger],
       mod: {CacheMaster, []},
       env: [
-        master_host: 'cache-master',
+        master_host: 'cache-slave1-replica1',
         master_port: 6667,
         port_for_client: 6666,
         port_for_slave: 6667

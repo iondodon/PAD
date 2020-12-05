@@ -4,6 +4,7 @@ defmodule Cache.NewSlaveListener do
 	alias Cache.SlaveRegistry
 
 	@port_for_slave Application.get_env(:cache_master, :port_for_slave, 6667)
+	@host System.get_env("HOST")
 	@recv_length 0
 	@delay 1000
 
@@ -50,7 +51,12 @@ defmodule Cache.NewSlaveListener do
 		:timer.sleep(@delay)
 		IO.inspect("Sending initial state to the new replica")
 		{:ok, io_state} = get_replica_state(slave_name)
-		:ok = :gen_tcp.send(slave, io_state)
+		{:ok, io_data} = Poison.encode(%{
+			"master_host" => @host,
+			"state" => io_state,
+			"slave_registry" => SlaveRegistry.get_registry()
+		})
+		:ok = :gen_tcp.send(slave, io_data <> "\n")
 
 		SlaveRegistry.add_slave(slave_name, slave)
 		Logger.info("Slave #{Kernel.inspect(slave)} added")

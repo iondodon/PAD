@@ -36,4 +36,10 @@ defmodule Cache.SlaveRegistry do
 	def get_registry() do
 		Agent.get(__MODULE__, fn registry -> registry end)
 	end
+
+	def set_registry(registry) do
+		Logger.info("New registry")
+		IO.inspect(registry)
+		Agent.update(__MODULE__, fn _ -> registry end)
+	end
 end
