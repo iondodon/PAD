@@ -52,12 +52,14 @@ defmodule Cache.NewSlaveListener do
 
 		# send replica state, host, and slaves registry
 		:timer.sleep(@delay)
-		IO.inspect("Sending initial state, host and slave registry to the new replica")
+		Logger.info("Sending initial state, host and slave hosts to the new replica")
 		{:ok, io_state} = get_replica_state(slave_name)
+		slave_hosts = Map.get(SlaveRegistry.get_registry(), "slave_hosts", [])
+		slave_hosts = slave_hosts ++ [slave_host]
 		{:ok, io_data} = Poison.encode(%{
 			"master_host" => @host,
 			"state" => io_state,
-			"slave_registry" => SlaveRegistry.get_registry()
+			"slave_hosts" => slave_hosts
 		})
 		:ok = :gen_tcp.send(slave, io_data <> "\n")
 

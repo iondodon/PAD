@@ -15,9 +15,19 @@ defmodule Cache.LiveManager do
 
     def loop_manage_cache() do
         clean_expired_keys()
+        # check_master_health()
         :timer.sleep(@delay_interval)
         loop_manage_cache()
     end
+
+    # defp check_master_health() do
+    #     master_host = Storage.get("master_host")
+    #     opts = [:binary, :inet, active: false, packet: :line]
+        # case :gen_tcp.connect(master_host, 6666, opts) do
+        #     {:ok, _socket} -> IO.inspect()
+        #     {:error, _reason} -> IO.inspect()
+        # end
+    # end
 
     defp clean_expired_keys() do
         ttls = Extra.get_ttls()

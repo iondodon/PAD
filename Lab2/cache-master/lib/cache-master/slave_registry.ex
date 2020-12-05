@@ -25,9 +25,12 @@ defmodule Cache.SlaveRegistry do
 			end
 
 			replicas = Map.get(registry, @tag_replicas <> slave_name, [])
-			replicas = replicas ++ [{slave_host, slave_socket}]
-
+			replicas = replicas ++ [slave_socket]
 			registry = Map.put(registry, @tag_replicas <> slave_name, replicas)
+
+			slave_hosts = Map.get(registry, "slave_hosts", [])
+			slave_hosts = slave_hosts ++ [slave_host]
+			registry = Map.put(registry, "slave_hosts", slave_hosts)
 
 			registry
 		end)
@@ -37,9 +40,11 @@ defmodule Cache.SlaveRegistry do
 		Agent.get(__MODULE__, fn registry -> registry end)
 	end
 
-	def set_registry(registry) do
-		Logger.info("New registry")
-		IO.inspect(registry)
-		Agent.update(__MODULE__, fn _ -> registry end)
+	def set_slave_hosts(slave_hosts) do
+		Logger.info("slave_hosts has been set")
+		IO.inspect(slave_hosts)
+		Agent.update(__MODULE__, fn registry ->
+			Map.put(registry, "slave_hosts", slave_hosts)
+		end)
 	end
 end

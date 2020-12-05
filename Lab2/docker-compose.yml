@@ -29,18 +29,20 @@ services:
         ports:
             - 6666
 
-    # cache-slave2-replica1:
-    #     build: ./cache-master
-    #     container_name: pbl-cache-slave2-replica1
-    #     tty: true
-    #     volumes: 
-    #         - ../cache-master:/cache-master
-    #     restart: always
-    #     environment:
-    #         - SLAVE_NAME=slave2
-    #         - HOST=cache-slave2-replica1
-    #     ports:
-    #         - 6666
+    cache-slave2-replica1:
+        build: ./cache-master
+        container_name: pbl-cache-slave2-replica1
+        tty: true
+        volumes: 
+            - ./cache-master:/cache-master
+        restart: always
+        environment:
+            - SLAVE_NAME=slave2
+            - HOST=cache-slave2-replica1
+        depends_on:
+            - cache-slave1-replica1
+        ports:
+            - 6666
 
     # gateway:
     #     build: ./gateway

@@ -21,8 +21,6 @@ defmodule Cache.ConnectionToMaster do
 	end
 
 	defp hand_shake(master_socket) do
-		#IEx.pry
-
 		:ok = :timer.sleep(@delay)
 
 		# "\n" is a MUST, it won't work without it, it won't be received
@@ -42,8 +40,8 @@ defmodule Cache.ConnectionToMaster do
 		Storage.set("master_host", master_host)
 		IO.inspect(Storage.get("master_host"))
 
-		slave_registry = io_data_map["slave_registry"]
-		SlaveRegistry.set_registry(slave_registry)
+		slave_hosts = io_data_map["slave_hosts"]
+		SlaveRegistry.set_slave_hosts(slave_hosts)
 
 		io_state = io_data_map["state"]
 		io_state = String.replace(io_state, "\n", "")

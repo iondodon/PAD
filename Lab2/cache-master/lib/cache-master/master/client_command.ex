@@ -173,7 +173,7 @@ defmodule Cache.ClientCommand do
         #todo: return nil, then causes no right hand match
         {slave_name, slave_hash} = find_slave_to_use(slaves, key_hash)
 
-        [{_, first_rep_socket} | rest_replicas] = Map.get(registry, @tag_replicas <> slave_name)
+        [first_rep_socket | rest_replicas] = Map.get(registry, @tag_replicas <> slave_name)
         Logger.info("EXECUTE #{io_command} on slave #{slave_name} with hash #{slave_hash}")
         :ok = :gen_tcp.send(first_rep_socket, io_command)
 
