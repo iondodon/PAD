@@ -10,6 +10,7 @@ services:
         environment:
             - SLAVE_NAME=slave1
             - HOST=cache-slave1-replica1
+            - DEFAULT_MASTER=true
         ports:
             - 6666
 
@@ -23,6 +24,8 @@ services:
         environment:
             - SLAVE_NAME=slave1
             - HOST=cache-slave1-replica2
+        depends_on:
+            - cache-slave1-replica1
         ports:
             - 6666
 
