@@ -13,7 +13,7 @@ defmodule Cache.ConnectionToMaster do
 	defp is_next_master? do
 		slave_registry = SlaveRegistry.get_registry()
 		slave_hosts = Map.get(slave_registry, "slave_hosts", :nil)
-		if slave_hosts == :nil or List.first(slave_hosts)	== :nil do
+		if slave_hosts == :nil or Enum.empty?(slave_hosts) do
 			true
 		else
 			next_master_host = List.first(slave_hosts)
@@ -25,15 +25,11 @@ defmodule Cache.ConnectionToMaster do
 		end
 	end
 
-	defp restart_as_master() do
-		IO.inspect("Should be restarted as master")
-	end
-
 	defp get_master_host() do
 		slave_registry = Cache.SlaveRegistry.get_registry()
 		slave_hosts = Map.get(slave_registry, "slave_hosts", [])
 
-		master_host = if Enum.empty?(slave_hosts) do
+		master_host = if slave_hosts != :nil or (slave_hosts != :nil and Enum.empty?(slave_hosts)) do
 			'cache-slave1-replica1'
 		else
 			[master_host, _rest] = slave_hosts
@@ -43,12 +39,17 @@ defmodule Cache.ConnectionToMaster do
 		master_host
 	end
 
+	defp restart_as_master() do
+		IO.inspect("Should be restarted as master")
+	end
+
 	def connect() do
-		host = get_master_host()
-		IO.inspect(host)
+		master_host = get_master_host()
+		IO.inspect(master_host)
+		Logger.info(master_host)
 
 		opts = [:binary, :inet, active: false, packet: :line]
-		case :gen_tcp.connect(host, @master_port, opts) do
+		case :gen_tcp.connect(master_host, @master_port, opts) do
 			{:ok, master_socket} ->
 				hand_shake(master_socket)
 			{:error, reason} ->
@@ -93,7 +94,7 @@ defmodule Cache.ConnectionToMaster do
 		{:ok, _pid} = Task.Supervisor.start_child(
 			MasterCommandListener.Supervisor,
 			fn -> Cache.MasterCommandListener.serve(master_socket) end,
-			[restart: :permanent]
+			[restart: :temporary]
 		)
 	end
 

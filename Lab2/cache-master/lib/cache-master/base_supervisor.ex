@@ -1,5 +1,5 @@
 defmodule Cache.BaseSupervisor do
-    use Supervisor
+    use Supervisor, restart: :permanent
 
     def init(children) do
         Supervisor.init(children, strategy: :one_for_one)
