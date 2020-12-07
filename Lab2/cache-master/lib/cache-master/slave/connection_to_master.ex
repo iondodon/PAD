@@ -4,7 +4,6 @@ defmodule Cache.ConnectionToMaster do
 
 	require Logger
 
-	@master_host Application.get_env(:cache_slave, :master_host, 'cache-slave1-replica1')
 	@master_port Application.get_env(:cache_slave, :master_port, 6667)
 
 	@delay 1000
@@ -12,9 +11,13 @@ defmodule Cache.ConnectionToMaster do
 
 	defp is_next_master? do
 		slave_registry = SlaveRegistry.get_registry()
-		slave_hosts = Map.get(slave_registry, "slave_hosts", :nil)
-		if slave_hosts == :nil or Enum.empty?(slave_hosts) do
-			true
+		slave_hosts = Map.get(slave_registry, "slave_hosts", [])
+		if Enum.empty?(slave_hosts) do
+			if System.get_env("HOST") == "cache-slave1-replica1" do
+				true
+			else
+				false
+			end
 		else
 			next_master_host = List.first(slave_hosts)
 			if next_master_host == System.get_env("HOST") do
@@ -29,7 +32,7 @@ defmodule Cache.ConnectionToMaster do
 		slave_registry = Cache.SlaveRegistry.get_registry()
 		slave_hosts = Map.get(slave_registry, "slave_hosts", [])
 
-		master_host = if slave_hosts != :nil or (slave_hosts != :nil and Enum.empty?(slave_hosts)) do
+		master_host = if Enum.empty?(slave_hosts) do
 			'cache-slave1-replica1'
 		else
 			[master_host, _rest] = slave_hosts
@@ -46,15 +49,17 @@ defmodule Cache.ConnectionToMaster do
 	def connect() do
 		master_host = get_master_host()
 		IO.inspect(master_host)
-		Logger.info(master_host)
 
-		opts = [:binary, :inet, active: false, packet: :line]
-		case :gen_tcp.connect(master_host, @master_port, opts) do
-			{:ok, master_socket} ->
-				hand_shake(master_socket)
-			{:error, reason} ->
-				Logger.error(reason)
-				if is_next_master?() do restart_as_master() else connect() end
+		if is_next_master?() do
+			restart_as_master()
+		else
+			opts = [:binary, :inet, active: false, packet: :line]
+			case :gen_tcp.connect(master_host, @master_port, opts) do
+				{:ok, master_socket} ->
+					hand_shake(master_socket)
+				{:error, _reason} ->
+					connect()
+			end
 		end
 	end
 
@@ -91,7 +96,7 @@ defmodule Cache.ConnectionToMaster do
 
 		Logger.info("Successfully registered to master")
 
-		{:ok, _pid} = Task.Supervisor.start_child(
+		Task.Supervisor.start_child(
 			MasterCommandListener.Supervisor,
 			fn -> Cache.MasterCommandListener.serve(master_socket) end,
 			[restart: :temporary]
@@ -102,6 +107,7 @@ defmodule Cache.ConnectionToMaster do
 		%{
 		 	id: __MODULE__,
 		 	start: {__MODULE__, :connect, []},
+			name: __MODULE__,
 			type: :worker,
 			restart: :permanent
 		}

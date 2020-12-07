@@ -9,13 +9,12 @@ defmodule Cache.MasterCommandListener do
                    do: Cache.Command.run(command)
 
         if send_to_master(master_socket, result) do
-            IO.inspect("serve")
             serve(master_socket)
         else
-            IO.inspect("Restarting")
-            :ok = Supervisor.terminate_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
-            {:ok, child} = Supervisor.restart_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
-            IO.inspect(child)
+            Task.async(fn ->
+                :ok = Supervisor.terminate_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
+                {:ok, _child} = Supervisor.restart_child(Cache.BaseSupervisor, Cache.ConnectionToMaster)
+            end)
         end
     end
 
